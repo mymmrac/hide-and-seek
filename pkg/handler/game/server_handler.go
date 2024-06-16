@@ -12,17 +12,17 @@ import (
 )
 
 func (g *Game) handleConnection(conn *websocket.Conn) {
-	ctx, cancel := context.WithCancel(g.ctx)
+	ctx, ctxCancel := context.WithCancel(g.ctx)
 	log := logger.FromContext(ctx)
 
 	log.Debugf("Connected to server: %s", conn.RemoteAddr().String())
 
-	cancel = sync.OnceFunc(func() {
-		cancel()
+	cancel := sync.OnceFunc(func() {
+		ctxCancel()
 		ws.WriteCloseMessage(conn)
 		log.Debugf("Connection to server closed: %s", conn.RemoteAddr().String())
 		g.events <- EventDisconnectedFromServer
-		g.wg.Done()
+		g.wg.Done() // WG: Server connection
 	})
 	defer cancel()
 

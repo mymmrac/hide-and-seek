@@ -64,7 +64,7 @@ func NewGame(
 }
 
 func (g *Game) Init() error {
-	g.wg.Add(1)
+	g.wg.Add(1) // WG: Game loop
 
 	ebiten.SetWindowTitle("Hide & Seek")
 	ebiten.SetWindowSize(1080, 720)
@@ -79,7 +79,7 @@ func (g *Game) Init() error {
 func (g *Game) Update() error {
 	select {
 	case <-g.ctx.Done():
-		g.wg.Done()
+		g.wg.Done() // WG: Game loop
 		return ebiten.Termination
 	default:
 		// Continue
@@ -139,7 +139,11 @@ func (g *Game) Update() error {
 	msgLoop:
 		for {
 			select {
-			case msg := <-g.responses:
+			case msg, ok := <-g.responses:
+				if !ok {
+					break msgLoop
+				}
+
 				g.players[msg.From] = msg.Pos
 			default:
 				break msgLoop

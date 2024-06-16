@@ -24,7 +24,7 @@ func (g *Game) connectToServer() {
 	g.requests = make(chan *api.Msg, 32)
 	g.responses = make(chan *api.Msg, 32)
 
-	g.wg.Add(1)
+	g.wg.Add(1) // WG: Server connection
 	go g.handleConnection(conn)
 
 	g.events <- EventConnectedToServer
