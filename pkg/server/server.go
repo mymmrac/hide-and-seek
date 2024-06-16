@@ -17,10 +17,6 @@ type Server struct {
 	players    map[uint64]*Client
 }
 
-type Client struct {
-	ConnWrite chan *api.Msg
-}
-
 func NewServer() *Server {
 	return &Server{
 		playerLock: sync.RWMutex{},
@@ -50,8 +46,9 @@ func (s *Server) Handler(conn *websocket.Conn) {
 	log = log.With("connection-id", connectionID)
 	ctx = logger.ToContext(ctx, log)
 
+	responses := make(chan *api.Msg, 32)
 	client := &Client{
-		ConnWrite: make(chan *api.Msg, 32),
+		Responses: responses,
 	}
 
 	s.playerLock.Lock()
@@ -65,7 +62,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			select {
 			case <-ctx.Done():
 				return
-			case msg, ok := <-client.ConnWrite:
+			case msg, ok := <-responses:
 				if !ok {
 					return
 				}
@@ -109,7 +106,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			}
 
 			select {
-			case player.ConnWrite <- msg:
+			case player.Responses <- msg:
 				// Sent
 			default:
 				log.Error("Write buffer is full")

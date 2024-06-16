@@ -30,8 +30,8 @@ type Game struct {
 
 	connected    bool
 	connectionID uint64
-	connWrite    chan *api.Msg
-	connRead     chan *api.Msg
+	requests     chan *api.Msg
+	responses    chan *api.Msg
 
 	playerLock sync.RWMutex
 	players    map[uint64]space.Vec2F
@@ -50,8 +50,8 @@ func NewGame(
 		events:       make(chan EventType, 32),
 		connected:    false,
 		connectionID: rand.Uint64(),
-		connWrite:    nil,
-		connRead:     nil,
+		requests:     nil,
+		responses:    nil,
 		playerLock:   sync.RWMutex{},
 		players:      make(map[uint64]space.Vec2F),
 		player: Player{
@@ -126,7 +126,7 @@ func (g *Game) Update() error {
 
 	if g.connected {
 		select {
-		case g.connWrite <- &api.Msg{
+		case g.requests <- &api.Msg{
 			From: g.connectionID,
 			Pos:  g.player.Pos,
 		}:
@@ -139,7 +139,7 @@ func (g *Game) Update() error {
 	msgLoop:
 		for {
 			select {
-			case msg := <-g.connRead:
+			case msg := <-g.responses:
 				g.players[msg.From] = msg.Pos
 			default:
 				break msgLoop

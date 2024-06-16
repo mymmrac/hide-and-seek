@@ -21,8 +21,8 @@ func (g *Game) connectToServer() {
 		return
 	}
 
-	g.connWrite = make(chan *api.Msg, 32)
-	g.connRead = make(chan *api.Msg, 32)
+	g.requests = make(chan *api.Msg, 32)
+	g.responses = make(chan *api.Msg, 32)
 
 	g.wg.Add(1)
 	go g.handleConnection(conn)

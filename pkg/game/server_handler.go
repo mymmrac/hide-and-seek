@@ -33,7 +33,7 @@ func (g *Game) handleConnection(conn *websocket.Conn) {
 			select {
 			case <-ctx.Done():
 				return
-			case msg, ok := <-g.connWrite:
+			case msg, ok := <-g.requests:
 				if !ok {
 					return
 				}
@@ -71,7 +71,7 @@ func (g *Game) handleConnection(conn *websocket.Conn) {
 		}
 
 		select {
-		case g.connRead <- msg:
+		case g.responses <- msg:
 			// Process message
 		default:
 			log.Errorf("Connection read buffer full")
