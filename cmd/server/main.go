@@ -9,9 +9,8 @@ import (
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/mymmrac/hide-and-seek/pkg/logger"
-	_ "github.com/mymmrac/hide-and-seek/pkg/logger"
-	"github.com/mymmrac/hide-and-seek/pkg/server"
+	"github.com/mymmrac/hide-and-seek/pkg/handler/server"
+	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 )
 
 func main() {

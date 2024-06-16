@@ -7,9 +7,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 
-	"github.com/mymmrac/hide-and-seek/pkg/game"
-	"github.com/mymmrac/hide-and-seek/pkg/logger"
-	_ "github.com/mymmrac/hide-and-seek/pkg/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/handler/game"
+	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 )
 
 func main() {

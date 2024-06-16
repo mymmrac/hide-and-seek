@@ -13,8 +13,8 @@ import (
 	"golang.org/x/image/colornames"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
-	"github.com/mymmrac/hide-and-seek/pkg/logger"
-	"github.com/mymmrac/hide-and-seek/pkg/space"
+	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
 
 type Msg struct {

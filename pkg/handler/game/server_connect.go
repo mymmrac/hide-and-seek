@@ -6,7 +6,7 @@ import (
 	"github.com/fasthttp/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
-	"github.com/mymmrac/hide-and-seek/pkg/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 )
 
 func (g *Game) connectToServer() {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	"github.com/mymmrac/hide-and-seek/pkg/space"
+	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
 
 type Msg struct {

@@ -7,8 +7,8 @@ import (
 	"github.com/fasthttp/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
-	"github.com/mymmrac/hide-and-seek/pkg/logger"
-	"github.com/mymmrac/hide-and-seek/pkg/ws"
+	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/module/ws"
 )
 
 func (g *Game) handleConnection(conn *websocket.Conn) {
