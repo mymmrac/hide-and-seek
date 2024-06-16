@@ -94,7 +94,7 @@ func (g *Game) Update() error {
 	case event := <-g.events:
 		switch event {
 		case EventStartServer:
-			go g.ConnectToServer()
+			go g.connectToServer()
 		case EventConnectedToServer:
 			logger.FromContext(g.ctx).Info("Connected to server")
 			g.connected = true

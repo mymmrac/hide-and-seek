@@ -9,7 +9,7 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/logger"
 )
 
-func (g *Game) ConnectToServer() {
+func (g *Game) connectToServer() {
 	conn, _, err := websocket.DefaultDialer.DialContext(
 		g.ctx,
 		"ws://localhost:4242?id="+strconv.FormatUint(g.connectionID, 10),
@@ -25,7 +25,7 @@ func (g *Game) ConnectToServer() {
 	g.connRead = make(chan *api.Msg, 32)
 
 	g.wg.Add(1)
-	go g.HandleConnection(conn)
+	go g.handleConnection(conn)
 
 	g.events <- EventConnectedToServer
 }

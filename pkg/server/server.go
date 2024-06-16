@@ -2,16 +2,14 @@ package server
 
 import (
 	"context"
-	"errors"
-	"net"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/gofiber/contrib/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
 	"github.com/mymmrac/hide-and-seek/pkg/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/ws"
 )
 
 type Server struct {
@@ -38,15 +36,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 
 	cancel = sync.OnceFunc(func() {
 		cancel()
-
-		if err := conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second)); err != nil {
-			log.Errorf("Error sending close message: %s", err)
-		}
-
-		if err := conn.Close(); err != nil {
-			log.Errorf("Error closing connection: %s", err)
-		}
-
+		ws.WriteCloseMessage(conn)
 		log.Debugf("Connection closed from: %s", conn.RemoteAddr().String())
 	})
 	defer cancel()
@@ -86,18 +76,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 					return
 				}
 
-				err = conn.WriteMessage(websocket.BinaryMessage, data)
-				if err != nil {
-					if websocket.IsCloseError(err, websocket.CloseNormalClosure) || errors.Is(err, net.ErrClosed) {
-						return
-					}
-
-					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-						log.Errorf("Unexpected close: %s", err)
-						return
-					}
-
-					log.Errorf("Error writing message: %s", err)
+				if !ws.WriteMessage(log, conn, data) {
 					return
 				}
 			}
@@ -112,22 +91,9 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			// Continue
 		}
 
-		msgType, data, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				return
-			}
-
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Errorf("Unexpected close: %s", err)
-				return
-			}
-
-			log.Errorf("Error reading message: %s", err)
+		data, ok := ws.ReadMessage(log, conn)
+		if !ok {
 			return
-		}
-		if msgType != websocket.BinaryMessage {
-			continue
 		}
 
 		msg := &api.Msg{}
@@ -135,8 +101,6 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			log.Errorf("Error unmarshaling message: %s", err)
 			return
 		}
-
-		// log.Debugf("Received message: %+v", msg)
 
 		s.playerLock.Lock()
 		for id, player := range s.players {
