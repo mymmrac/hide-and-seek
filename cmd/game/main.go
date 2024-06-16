@@ -25,6 +25,8 @@ func main() {
 	go runGame(gameInstance, cancel)
 
 	<-ctx.Done()
+	gameInstance.Shutdown()
+
 	log.Info("Bye!")
 }
 

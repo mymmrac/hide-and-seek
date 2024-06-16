@@ -1,41 +1,24 @@
-package server
+package game
 
 import (
 	"context"
 	"errors"
 	"net"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/gofiber/contrib/websocket"
+	"github.com/fasthttp/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
 )
 
-type Server struct {
-	playerLock sync.RWMutex
-	players    map[uint64]*Client
-}
+func (g *Game) HandleConnection(conn *websocket.Conn) {
+	ctx, ctxCancel := context.WithCancel(g.ctx)
+	log.Debugf("Connected to server: %s", conn.RemoteAddr().String())
 
-type Client struct {
-	ConnWrite chan *api.Msg
-}
-
-func NewServer() *Server {
-	return &Server{
-		playerLock: sync.RWMutex{},
-		players:    make(map[uint64]*Client),
-	}
-}
-
-func (s *Server) Handler(conn *websocket.Conn) {
-	ctx, cancel := context.WithCancel(context.Background())
-	log.Debugf("New connection from: %s", conn.RemoteAddr().String())
-
-	cancel = sync.OnceFunc(func() {
-		cancel()
+	cancel := sync.OnceFunc(func() {
+		ctxCancel()
 
 		if err := conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second)); err != nil {
 			log.Errorf("Error sending close message: %s", err)
@@ -45,23 +28,11 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			log.Errorf("Error closing connection: %s", err)
 		}
 
-		log.Debugf("Connection closed from: %s", conn.RemoteAddr().String())
+		log.Debugf("Connection to server closed: %s", conn.RemoteAddr().String())
+		g.events <- EventDisconnectedFromServer
+		g.wg.Done()
 	})
 	defer cancel()
-
-	connectionID, err := strconv.ParseUint(conn.Query("id"), 10, 64)
-	if err != nil {
-		log.Errorf("Error parsing connection ID: %s", err)
-		return
-	}
-
-	client := &Client{
-		ConnWrite: make(chan *api.Msg, 32),
-	}
-
-	s.playerLock.Lock()
-	s.players[connectionID] = client
-	s.playerLock.Unlock()
 
 	go func() {
 		defer cancel()
@@ -70,7 +41,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			select {
 			case <-ctx.Done():
 				return
-			case msg, ok := <-client.ConnWrite:
+			case msg, ok := <-g.connWrite:
 				if !ok {
 					return
 				}
@@ -109,7 +80,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) || errors.Is(err, net.ErrClosed) {
 				return
 			}
 
@@ -132,20 +103,10 @@ func (s *Server) Handler(conn *websocket.Conn) {
 		}
 
 		// log.Debugf("Received message: %+v", msg)
-
-		s.playerLock.Lock()
-		for id, player := range s.players {
-			if id == connectionID {
-				continue
-			}
-
-			select {
-			case player.ConnWrite <- msg:
-				// Sent
-			default:
-				log.Errorf("Writing to player %d failed: buffer is full", id)
-			}
+		select {
+		case g.connRead <- msg:
+		default:
+			log.Errorf("Connection read buffer full")
 		}
-		s.playerLock.Unlock()
 	}
 }
