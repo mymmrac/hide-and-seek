@@ -3,10 +3,10 @@ package game
 import (
 	"strconv"
 
-	"github.com/charmbracelet/log"
 	"github.com/fasthttp/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/logger"
 )
 
 func (g *Game) ConnectToServer() {
@@ -16,7 +16,7 @@ func (g *Game) ConnectToServer() {
 		nil,
 	)
 	if err != nil {
-		log.Errorf("Error connecting to server: %s", err)
+		logger.FromContext(g.ctx).Errorf("Error connecting to server: %s", err)
 		g.events <- EventDisconnectedFromServer
 		return
 	}

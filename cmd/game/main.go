@@ -5,16 +5,18 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/charmbracelet/log"
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"github.com/mymmrac/hide-and-seek/pkg/game"
+	"github.com/mymmrac/hide-and-seek/pkg/logger"
 	_ "github.com/mymmrac/hide-and-seek/pkg/logger"
 )
 
 func main() {
-	log.Info("Starting game...")
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+
+	log := logger.FromContext(ctx)
+	log.Info("Starting game...")
 
 	gameInstance := game.NewGame(ctx, cancel)
 	if err := gameInstance.Init(); err != nil {
@@ -22,18 +24,15 @@ func main() {
 		return
 	}
 
-	go runGame(gameInstance, cancel)
+	go func() {
+		defer cancel()
+		if err := ebiten.RunGame(gameInstance); err != nil {
+			log.Errorf("Error running game: %s", err)
+		}
+	}()
 
 	<-ctx.Done()
 	gameInstance.Shutdown()
 
 	log.Info("Bye!")
-}
-
-func runGame(gameInstance *game.Game, cancel context.CancelFunc) {
-	defer cancel()
-
-	if err := ebiten.RunGame(gameInstance); err != nil {
-		log.Errorf("Error running game: %s", err)
-	}
 }

@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/gofiber/contrib/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/logger"
 )
 
 type Server struct {
@@ -32,6 +32,8 @@ func NewServer() *Server {
 
 func (s *Server) Handler(conn *websocket.Conn) {
 	ctx, cancel := context.WithCancel(context.Background())
+	log := logger.FromContext(ctx)
+
 	log.Debugf("New connection from: %s", conn.RemoteAddr().String())
 
 	cancel = sync.OnceFunc(func() {
@@ -54,6 +56,9 @@ func (s *Server) Handler(conn *websocket.Conn) {
 		log.Errorf("Error parsing connection ID: %s", err)
 		return
 	}
+
+	log = log.With("connection-id", connectionID)
+	ctx = logger.ToContext(ctx, log)
 
 	client := &Client{
 		ConnWrite: make(chan *api.Msg, 32),
@@ -143,7 +148,7 @@ func (s *Server) Handler(conn *websocket.Conn) {
 			case player.ConnWrite <- msg:
 				// Sent
 			default:
-				log.Errorf("Writing to player %d failed: buffer is full", id)
+				log.Error("Write buffer is full")
 			}
 		}
 		s.playerLock.Unlock()

@@ -6,7 +6,6 @@ import (
 	"math/rand/v2"
 	"sync"
 
-	"github.com/charmbracelet/log"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -14,6 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/space"
 )
 
@@ -96,17 +96,17 @@ func (g *Game) Update() error {
 		case EventStartServer:
 			go g.ConnectToServer()
 		case EventConnectedToServer:
-			log.Info("Connected to server")
+			logger.FromContext(g.ctx).Info("Connected to server")
 			g.connected = true
 		case EventDisconnectedFromServer:
 			if g.connected {
-				log.Info("Disconnected from server")
+				logger.FromContext(g.ctx).Info("Disconnected from server")
 			} else {
-				log.Errorf("Failed to connect to server")
+				logger.FromContext(g.ctx).Errorf("Failed to connect to server")
 			}
 			g.connected = false
 		default:
-			log.Errorf("Unknown event: %d", event)
+			logger.FromContext(g.ctx).Errorf("Unknown event: %d", event)
 		}
 	default:
 		// Continue
@@ -132,7 +132,7 @@ func (g *Game) Update() error {
 		}:
 			// Continue
 		default:
-			log.Errorf("Write buffer is full")
+			logger.FromContext(g.ctx).Errorf("Write buffer is full")
 		}
 
 		g.playerLock.Lock()

@@ -7,14 +7,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/fasthttp/websocket"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/logger"
 )
 
 func (g *Game) HandleConnection(conn *websocket.Conn) {
 	ctx, ctxCancel := context.WithCancel(g.ctx)
+	log := logger.FromContext(ctx)
+
 	log.Debugf("Connected to server: %s", conn.RemoteAddr().String())
 
 	cancel := sync.OnceFunc(func() {
