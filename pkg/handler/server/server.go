@@ -1,23 +1,20 @@
 package server
 
 import (
-	"sync"
-
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/mymmrac/hide-and-seek/pkg/module/api"
+	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
 )
 
 type Server struct {
-	playerLock sync.RWMutex // TODO: Use channel instead
-	players    map[string]*Client
+	clients *collection.SyncMap[string, *Client] // Token -> Client
 }
 
 func NewServer() *Server {
 	return &Server{
-		playerLock: sync.RWMutex{},
-		players:    make(map[string]*Client),
+		clients: collection.NewSyncMap[string, *Client](),
 	}
 }
 

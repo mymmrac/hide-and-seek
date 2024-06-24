@@ -33,31 +33,40 @@ func (s *Server) handlerWS(conn *websocket.Conn) {
 		return
 	}
 
-	s.playerLock.RLock()
-	client, ok := s.players[token]
-	s.playerLock.RUnlock()
-
+	client, ok := s.clients.Get(token)
 	if !ok {
-		log.Errorf("Invalid token: %s", token)
+		log.Errorf("Unknown token: %s", token)
 		return
 	}
 
-	defer func() {
-		s.playerLock.Lock()
-		delete(s.players, token)
-		s.playerLock.Unlock()
-	}()
-
 	connectionID := rand.Uint64()
-
-	log = log.With("connection-id", connectionID)
+	log = log.With("player-id", client.PlayerID, "connection-id", connectionID)
 	ctx = logger.ToContext(ctx, log)
 
 	responses := make(chan *socket.Response, 32)
-	client.Responses = responses
-	client.ConnectionID = connectionID
+	state := &ClientState{
+		Context:      ctx,
+		ConnectionID: connectionID,
+		Responses:    responses,
+	}
 
-	client.Responses <- &socket.Response{
+	client.StateLock.Lock()
+	if client.State == nil {
+		client.State = state
+	} else {
+		client.StateLock.Unlock()
+		log.Errorf("Player already connected")
+		return
+	}
+	client.StateLock.Unlock()
+
+	defer func() {
+		client.StateLock.Lock()
+		client.State = nil
+		client.StateLock.Unlock()
+	}()
+
+	state.Responses <- &socket.Response{
 		Type: &socket.Response_Info_{
 			Info: &socket.Response_Info{
 				PlayerId: client.PlayerID,
@@ -119,14 +128,14 @@ func (s *Server) handlerWS(conn *websocket.Conn) {
 			continue
 		}
 
-		if err := s.processRequest(ctx, client, msg); err != nil {
+		if err := s.processRequest(client, msg); err != nil {
 			log.Errorf("Processing request: %s", err)
 			continue
 		}
 	}
 }
 
-func (s *Server) processRequest(ctx context.Context, client *Client, request *socket.Request) error {
+func (s *Server) processRequest(client *Client, request *socket.Request) error {
 	switch req := request.Type.(type) {
 	case *socket.Request_PlayerMove:
 		msg := &socket.Response{
@@ -138,32 +147,22 @@ func (s *Server) processRequest(ctx context.Context, client *Client, request *so
 			},
 		}
 
-		s.playerLock.Lock()
-		for _, player := range s.players {
-			if player.ConnectionID == client.ConnectionID || player.Responses == nil {
-				continue
+		s.clients.ForEach(func(_ string, otherClient *Client) bool {
+			otherState := otherClient.SafeState()
+			if otherState == nil || otherState.ConnectionID == client.State.ConnectionID {
+				return true
 			}
 
-			select {
-			case player.Responses <- msg:
-				// Sent
-			default:
-				logger.FromContext(ctx).Error("Write buffer is full")
-			}
-		}
-		s.playerLock.Unlock()
+			otherState.SendMessage(msg)
+			return true
+		})
 	default:
-		client.Responses <- &socket.Response{
-			Type: &socket.Response_Error_{
-				Error: &socket.Response_Error{
-					Code:    socket.Response_Error_UNSUPPORTED_REQUEST,
-					Message: fmt.Sprintf("%T", request.Type),
-				},
-			},
-		}
-		logger.FromContext(ctx).Errorf("Unsupported request: %T", request.Type)
+		client.State.SendError(&socket.Response_Error{
+			Code:    socket.Response_Error_UNSUPPORTED_REQUEST,
+			Message: fmt.Sprintf("%T", request.Type),
+		})
+		logger.FromContext(client.State).Errorf("Unsupported request: %T", request.Type)
 		return nil
 	}
-
 	return nil
 }
