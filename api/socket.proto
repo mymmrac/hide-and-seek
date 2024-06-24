@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package socket;
+
+import "validate/validate.proto";
+
+option go_package = "pkg/api/socket";
+
+message Request {
+  oneof type {
+    option  (validate.required) = true;
+
+    Pos player_move = 1 [(validate.rules).message.required = true];
+  }
+}
+
+message Response {
+  oneof type {
+    option  (validate.required) = true;
+
+    Bulk bulk = 1 [(validate.rules).message.required = true];
+    Error error = 2 [(validate.rules).message.required = true];
+    Info info = 3 [(validate.rules).message.required = true];
+
+    PlayerMove player_move = 10 [(validate.rules).message.required = true];
+  }
+
+  message Bulk {
+    repeated Response responses = 1 [
+      (validate.rules).repeated.min_items = 1,
+      (validate.rules).repeated.items.message.required = true
+    ];
+  }
+
+  message Error {
+    Code code = 1 [(validate.rules).enum.defined_only = true];
+    string message = 2 [(validate.rules).string.min_len = 1];
+
+    enum Code {
+      UNKNOWN = 0;
+      INVALID_REQUEST = 1;
+      UNSUPPORTED_REQUEST = 2;
+    }
+  }
+
+  message Info {
+    uint64 player_id = 1 [(validate.rules).uint64.gt = 0];
+  }
+
+  message PlayerMove {
+    uint64 player_id = 1 [(validate.rules).uint64.gt = 0];
+    Pos pos = 2 [(validate.rules).message.required = true];
+  }
+}
+
+message Pos {
+  double x = 1;
+  double y = 2;
+}

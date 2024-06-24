@@ -1,0 +1,6 @@
+proto_outdir = "./vendor"
+
+[[dependencies]]
+target = "github.com/bufbuild/protoc-gen-validate/validate"
+branch = "master"
+path = "validate"

@@ -5,8 +5,9 @@ import (
 	"sync"
 
 	"github.com/fasthttp/websocket"
+	"google.golang.org/protobuf/proto"
 
-	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/ws"
 )
@@ -38,9 +39,14 @@ func (g *Game) handleConnection(conn *websocket.Conn) {
 					return
 				}
 
-				data, err := msg.Marshal()
+				if err := msg.ValidateAll(); err != nil {
+					log.Errorf("Invalid request: %s", err)
+					continue
+				}
+
+				data, err := proto.Marshal(msg)
 				if err != nil {
-					log.Errorf("Error marshaling message: %s", err)
+					log.Errorf("Marshaling request: %s", err)
 					return
 				}
 
@@ -64,10 +70,15 @@ func (g *Game) handleConnection(conn *websocket.Conn) {
 			return
 		}
 
-		msg := &api.Msg{}
-		if err := msg.Unmarshal(data); err != nil {
-			log.Errorf("Error unmarshaling message: %s", err)
+		msg := &socket.Response{}
+		if err := proto.Unmarshal(data, msg); err != nil {
+			log.Errorf("Unmarshaling response: %s", err)
 			return
+		}
+
+		if err := msg.ValidateAll(); err != nil {
+			log.Errorf("Invalid response: %s", err)
+			continue
 		}
 
 		select {

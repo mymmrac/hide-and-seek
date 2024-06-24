@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package communication;
+
+option go_package = "pkg/api/communication";
+
+message Error {
+  string message = 1;
+}

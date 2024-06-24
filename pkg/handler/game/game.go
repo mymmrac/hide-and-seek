@@ -6,35 +6,36 @@ import (
 	"math/rand/v2"
 	"sync"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
 
-	"github.com/mymmrac/hide-and-seek/pkg/api"
+	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
-
-type Msg struct {
-	Data []byte
-}
 
 type Game struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
 
+	httpClient *fiber.Client
+
 	events chan EventType
 
 	connected    bool
 	connectionID uint64
-	requests     chan *api.Msg
-	responses    chan *api.Msg
+	requests     chan *socket.Request
+	responses    chan *socket.Response
 
 	playerLock sync.RWMutex
 	players    map[uint64]space.Vec2F
+
+	info *socket.Response_Info
 
 	player Player
 }
@@ -47,6 +48,7 @@ func NewGame(
 		ctx:          ctx,
 		cancel:       cancel,
 		wg:           sync.WaitGroup{},
+		httpClient:   &fiber.Client{},
 		events:       make(chan EventType, 32),
 		connected:    false,
 		connectionID: rand.Uint64(),
@@ -112,6 +114,23 @@ func (g *Game) Update() error {
 		// Continue
 	}
 
+	if g.connected {
+		g.sendMessage(&socket.Request{
+			Type: &socket.Request_PlayerMove{
+				PlayerMove: &socket.Pos{
+					X: g.player.Pos.X,
+					Y: g.player.Pos.Y,
+				},
+			},
+		})
+
+		g.processMessages()
+	}
+
+	if g.info == nil {
+		return nil
+	}
+
 	const speed = 5
 	if ebiten.IsKeyPressed(KeyLeft) {
 		g.player.Pos.X -= speed
@@ -124,39 +143,15 @@ func (g *Game) Update() error {
 		g.player.Pos.Y += speed
 	}
 
-	if g.connected {
-		select {
-		case g.requests <- &api.Msg{
-			From: g.connectionID,
-			Pos:  g.player.Pos,
-		}:
-			// Continue
-		default:
-			logger.FromContext(g.ctx).Errorf("Write buffer is full")
-		}
-
-		g.playerLock.Lock()
-	msgLoop:
-		for {
-			select {
-			case msg, ok := <-g.responses:
-				if !ok {
-					break msgLoop
-				}
-
-				g.players[msg.From] = msg.Pos
-			default:
-				break msgLoop
-			}
-		}
-		g.playerLock.Unlock()
-	}
-
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colornames.Darkgray)
+
+	if g.info == nil {
+		return
+	}
 
 	vector.DrawFilledRect(
 		screen,
@@ -167,9 +162,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		colornames.Blue,
 		true,
 	)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", g.info.PlayerId), int(g.player.Pos.X), int(g.player.Pos.Y))
 
 	g.playerLock.RLock()
-	for _, playerPos := range g.players {
+	for playerID, playerPos := range g.players {
 		vector.DrawFilledRect(
 			screen,
 			float32(playerPos.X),
@@ -179,6 +175,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			colornames.Green,
 			true,
 		)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", playerID), int(playerPos.X), int(playerPos.Y))
 	}
 	g.playerLock.RUnlock()
 

@@ -1,0 +1,26 @@
+version: "3"
+
+silent: true
+
+tasks:
+  default:
+    desc: "List all tasks"
+    cmds:
+      - task --list-all
+
+  proto:build:
+    desc: "Build proto files"
+    cmds:
+      - protoc -I ./api/vendor/ -I ./api --go_out=. --validate-go_out=. ./api/*.proto
+
+  proto:deps:
+    desc: "Install proto dependencies"
+    dir: ./api
+    cmds:
+      - protodep up --use-https
+
+  install:tools:
+    desc: "Install tools"
+    cmds:
+      - go install github.com/stormcat24/protodep@latest
+      - go install github.com/envoyproxy/protoc-gen-validate/cmd/protoc-gen-validate-go@latest

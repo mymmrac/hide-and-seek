@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package communication;
+
+import "validate/validate.proto";
+
+import "error.proto";
+
+option go_package = "pkg/api/communication";
+
+message Start {
+  message Request {
+    string username = 1 [(validate.rules).string = {min_len: 1, max_len: 32, pattern: "^[a-zA-Z][a-zA-Z0-9]*$"}];
+  }
+
+  message Response {
+    oneof type {
+      option  (validate.required) = true;
+      Error error = 1 [(validate.rules).message.required = true];
+      Result result = 2 [(validate.rules).message.required = true];
+    }
+
+    message Result {
+      string token = 1 [(validate.rules).string.min_len = 1];
+    }
+  }
+}

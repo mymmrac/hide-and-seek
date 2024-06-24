@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/mymmrac/hide-and-seek/pkg/handler/server"
@@ -24,7 +23,7 @@ func main() {
 	})
 
 	srv := server.NewServer()
-	app.Get("/", websocket.New(srv.Handler))
+	srv.RegisterHandlers(app)
 
 	go func() {
 		defer cancel()

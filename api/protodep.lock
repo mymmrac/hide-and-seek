@@ -1,0 +1,9 @@
+proto_outdir = "./vendor"
+
+[[dependencies]]
+  target = "github.com/bufbuild/protoc-gen-validate/validate"
+  subgroup = ""
+  revision = "9c5640de37137e3d2b1ccb1322b8a816fc376323"
+  branch = "master"
+  path = "validate"
+  protocol = ""
