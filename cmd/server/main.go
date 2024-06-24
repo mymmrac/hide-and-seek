@@ -25,6 +25,8 @@ func main() {
 	srv := server.NewServer()
 	srv.RegisterHandlers(app)
 
+	go srv.Run(ctx)
+
 	go func() {
 		defer cancel()
 		if err := app.Listen(":4242"); err != nil {

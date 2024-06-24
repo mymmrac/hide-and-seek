@@ -66,13 +66,43 @@ func (s *Server) handlerWS(conn *websocket.Conn) {
 		client.StateLock.Unlock()
 	}()
 
+	players := make([]*socket.Response_PlayerJoin, 0)
+	s.clients.ForEach(func(_ string, otherClient *Client) bool {
+		if otherClient.PlayerID == client.PlayerID || otherClient.SafeState() == nil {
+			return true
+		}
+		players = append(players, &socket.Response_PlayerJoin{
+			Id:       otherClient.PlayerID,
+			Username: otherClient.PlayerName,
+		})
+		return true
+	})
+
 	state.Responses <- &socket.Response{
 		Type: &socket.Response_Info_{
 			Info: &socket.Response_Info{
 				PlayerId: client.PlayerID,
+				Players:  players,
 			},
 		},
 	}
+
+	// TODO: Handle reconnects
+	s.BroadcastMessage(ctx, &socket.Response{
+		Type: &socket.Response_PlayerJoin_{
+			PlayerJoin: &socket.Response_PlayerJoin{
+				Id:       client.PlayerID,
+				Username: client.PlayerName,
+			},
+		},
+	})
+	defer func() {
+		s.BroadcastMessage(ctx, &socket.Response{
+			Type: &socket.Response_PlayerLeave{
+				PlayerLeave: client.PlayerID,
+			},
+		})
+	}()
 
 	go func() {
 		defer cancel()

@@ -39,14 +39,47 @@ func (g *Game) processMessage(msg *socket.Response) {
 		logger.FromContext(g.ctx).Errorf("Server error: %s:%s", resp.Error.Code.String(), resp.Error.Message)
 	case *socket.Response_Info_:
 		g.info = resp.Info
+
+		g.players.Lock()
+		players := g.players.Raw()
+		for _, player := range resp.Info.Players {
+			players[player.Id] = &Player{
+				Name: player.Username,
+				Pos:  space.Vec2F{},
+			}
+		}
+		delete(players, resp.Info.PlayerId)
+		g.players.Unlock()
+
 		logger.FromContext(g.ctx).Infof("Info: %+v", resp.Info)
+	case *socket.Response_PlayerJoin_:
+		if g.info != nil && g.info.PlayerId == resp.PlayerJoin.Id {
+			return
+		}
+
+		g.players.Set(resp.PlayerJoin.Id, &Player{
+			Name: resp.PlayerJoin.Username,
+			Pos:  space.Vec2F{},
+		})
+		logger.FromContext(g.ctx).Infof("Player joined: %+v", resp.PlayerJoin)
+	case *socket.Response_PlayerLeave:
+		if g.info != nil && g.info.PlayerId == resp.PlayerLeave {
+			return
+		}
+
+		g.players.Remove(resp.PlayerLeave)
+		logger.FromContext(g.ctx).Infof("Player left: %+v", resp.PlayerLeave)
 	case *socket.Response_PlayerMove_:
-		g.playerLock.Lock()
-		g.players[resp.PlayerMove.PlayerId] = space.Vec2F{
+		player, ok := g.players.Get(resp.PlayerMove.PlayerId)
+		if !ok {
+			logger.FromContext(g.ctx).Errorf("Unknown player: %d", resp.PlayerMove.PlayerId)
+			return
+		}
+
+		player.Pos = space.Vec2F{
 			X: resp.PlayerMove.Pos.X,
 			Y: resp.PlayerMove.Pos.Y,
 		}
-		g.playerLock.Unlock()
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)
 	}

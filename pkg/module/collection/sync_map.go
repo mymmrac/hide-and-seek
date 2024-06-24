@@ -20,6 +20,12 @@ func (m *SyncMap[K, V]) Set(key K, value V) {
 	m.Unlock()
 }
 
+func (m *SyncMap[K, V]) Remove(key K) {
+	m.Lock()
+	delete(m.values, key)
+	m.Unlock()
+}
+
 func (m *SyncMap[K, V]) Get(key K) (V, bool) {
 	m.RLock()
 	value, ok := m.values[key]

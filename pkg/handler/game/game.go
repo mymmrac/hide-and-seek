@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
+	"strconv"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,7 @@ import (
 	"golang.org/x/image/colornames"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
+	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
@@ -32,8 +34,7 @@ type Game struct {
 	requests     chan *socket.Request
 	responses    chan *socket.Response
 
-	playerLock sync.RWMutex
-	players    map[uint64]space.Vec2F
+	players *collection.SyncMap[uint64, *Player]
 
 	info *socket.Response_Info
 
@@ -54,9 +55,10 @@ func NewGame(
 		connectionID: rand.Uint64(),
 		requests:     nil,
 		responses:    nil,
-		playerLock:   sync.RWMutex{},
-		players:      make(map[uint64]space.Vec2F),
+		players:      collection.NewSyncMap[uint64, *Player](),
+		info:         nil,
 		player: Player{
+			Name: "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
 			Pos: space.Vec2F{
 				X: 100,
 				Y: 100,
@@ -162,22 +164,21 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		colornames.Blue,
 		true,
 	)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", g.info.PlayerId), int(g.player.Pos.X), int(g.player.Pos.Y))
+	ebitenutil.DebugPrintAt(screen, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
 
-	g.playerLock.RLock()
-	for playerID, playerPos := range g.players {
+	g.players.ForEach(func(_ uint64, player *Player) bool {
 		vector.DrawFilledRect(
 			screen,
-			float32(playerPos.X),
-			float32(playerPos.Y),
+			float32(player.Pos.X),
+			float32(player.Pos.Y),
 			32,
 			32,
 			colornames.Green,
 			true,
 		)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", playerID), int(playerPos.X), int(playerPos.Y))
-	}
-	g.playerLock.RUnlock()
+		ebitenutil.DebugPrintAt(screen, player.Name, int(player.Pos.X), int(player.Pos.Y))
+		return true
+	})
 
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Connected: %t", g.connected), 10, 100)
 

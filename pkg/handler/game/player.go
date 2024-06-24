@@ -5,5 +5,6 @@ import (
 )
 
 type Player struct {
-	Pos space.Vec2F
+	Name string
+	Pos  space.Vec2F
 }

@@ -2,8 +2,6 @@ package game
 
 import (
 	"fmt"
-	"math/rand/v2"
-	"strconv"
 
 	"github.com/fasthttp/websocket"
 
@@ -20,7 +18,7 @@ func (g *Game) connectToServer() {
 		g.httpClient,
 		fmt.Sprintf("http://%s/start", serverHostname),
 		&communication.Start_Request{
-			Username: "test" + strconv.FormatUint(rand.Uint64(), 10),
+			Username: g.player.Name,
 		},
 	)
 	if err != nil {

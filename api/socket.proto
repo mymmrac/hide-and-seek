@@ -10,6 +10,7 @@ message Request {
   oneof type {
     option  (validate.required) = true;
 
+    // Player moves
     Pos player_move = 1 [(validate.rules).message.required = true];
   }
 }
@@ -18,11 +19,20 @@ message Response {
   oneof type {
     option  (validate.required) = true;
 
+    // Bulk responses
     Bulk bulk = 1 [(validate.rules).message.required = true];
+    // Error
     Error error = 2 [(validate.rules).message.required = true];
+    // Info
     Info info = 3 [(validate.rules).message.required = true];
 
-    PlayerMove player_move = 10 [(validate.rules).message.required = true];
+    // Player joins game
+    PlayerJoin player_join = 10 [(validate.rules).message.required = true];
+    // Player leaves game
+    uint64 player_leave = 11 [(validate.rules).uint64.gt = 0];
+
+    // Player moves
+    PlayerMove player_move = 20 [(validate.rules).message.required = true];
   }
 
   message Bulk {
@@ -45,6 +55,12 @@ message Response {
 
   message Info {
     uint64 player_id = 1 [(validate.rules).uint64.gt = 0];
+    repeated PlayerJoin players = 2 [(validate.rules).repeated.items.message.required = true];
+  }
+
+  message PlayerJoin {
+    uint64 id = 1 [(validate.rules).uint64.gt = 0];
+    string username = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
   }
 
   message PlayerMove {
