@@ -89,6 +89,7 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 							}
 						}
 						if tID == 0 {
+							tID = lastTileID
 							tileset.Tiles[lastTileID] = tilePos
 							lastTileID++
 						}

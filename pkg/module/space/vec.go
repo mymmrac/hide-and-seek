@@ -12,6 +12,13 @@ func (v Vec2I) ToF() Vec2F {
 	}
 }
 
+func (v Vec2I) Add(u Vec2I) Vec2I {
+	return Vec2I{
+		X: v.X + u.X,
+		Y: v.Y + u.Y,
+	}
+}
+
 type Vec2F struct {
 	X float64
 	Y float64

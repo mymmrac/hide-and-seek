@@ -24,11 +24,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			))
 
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(lvl.Pos.X), float64(lvl.Pos.Y))
-			op.GeoM.Translate(float64(tile.Pos.X), float64(tile.Pos.Y))
+			pos := lvl.Pos.Add(tile.Pos).ToF()
+			op.GeoM.Translate(pos.X, pos.Y)
 			screen.DrawImage(tileImage.(*ebiten.Image), op)
 		}
 	}
+
+	// Draw tile IDs
+	// for _, lvl := range g.world.Levels {
+	// 	for _, tile := range lvl.Tiles {
+	// 		pos := lvl.Pos.Add(tile.Pos).Add(space.Vec2I{X: 8, Y: 8})
+	// 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", tile.TileID), pos.X, pos.Y)
+	// 	}
+	// }
 
 	const pad = 4
 	vector.DrawFilledRect(
