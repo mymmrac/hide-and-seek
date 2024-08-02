@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"image"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,6 +13,33 @@ import (
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colornames.Darkgray)
+
+	for _, lvl := range g.world.Levels {
+		for _, tile := range lvl.Tiles {
+			tileset := g.defs.Tilesets[tile.TilesetID]
+			tileDef := tileset.Tiles[tile.TileID]
+			tileImage := g.tilesets[tile.TilesetID].SubImage(image.Rect(
+				tileDef.X, tileDef.Y,
+				tileDef.X+tileset.TileSize.X, tileDef.Y+tileset.TileSize.Y,
+			))
+
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(lvl.Pos.X), float64(lvl.Pos.Y))
+			op.GeoM.Translate(float64(tile.Pos.X), float64(tile.Pos.Y))
+			screen.DrawImage(tileImage.(*ebiten.Image), op)
+		}
+	}
+
+	const pad = 4
+	vector.DrawFilledRect(
+		screen,
+		float32(g.world.Spawn.X)+pad,
+		float32(g.world.Spawn.Y)+pad,
+		32-pad*2,
+		32-pad*2,
+		colornames.Orange,
+		true,
+	)
 
 	vector.DrawFilledRect(
 		screen,

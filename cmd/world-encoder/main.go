@@ -1,12 +1,14 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
@@ -58,7 +60,13 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 		}
 
 		for i, lvl := range w.Levels {
-			lv := world.Level{}
+			lv := world.Level{
+				Pos: space.Vec2I{
+					X: lvl.WorldX,
+					Y: lvl.WorldY,
+				},
+				Tiles: nil,
+			}
 			for _, layer := range lvl.LayerInstances {
 				switch layer.Identifier {
 				case "walls_and_floor":
@@ -98,8 +106,8 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					for _, entity := range layer.EntityInstances {
 						if entity.Identifier == "spawn" {
 							wd.Spawn = space.Vec2I{
-								X: entity.WorldX,
-								Y: entity.WorldY,
+								X: entity.WorldX + lvl.WorldX,
+								Y: entity.WorldY + lvl.WorldY,
 							}
 						}
 					}
@@ -107,6 +115,14 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					continue
 				}
 			}
+
+			slices.SortFunc(lv.Tiles, func(a, b world.Tile) int {
+				if a.TilesetID == b.TilesetID {
+					return cmp.Compare(a.TileID, b.TileID)
+				}
+				return cmp.Compare(a.TilesetID, b.TilesetID)
+			})
+
 			wd.Levels[i] = lv
 		}
 
