@@ -23,3 +23,17 @@ type Vec2F struct {
 	X float64
 	Y float64
 }
+
+func (v Vec2F) Add(u Vec2F) Vec2F {
+	return Vec2F{
+		X: v.X + u.X,
+		Y: v.Y + u.Y,
+	}
+}
+
+func (v Vec2F) Sub(u Vec2F) Vec2F {
+	return Vec2F{
+		X: v.X - u.X,
+		Y: v.Y - u.Y,
+	}
+}

@@ -12,7 +12,7 @@ import (
 )
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(colornames.Darkgray)
+	g.worldImg.Fill(colornames.Darkgray)
 
 	for _, lvl := range g.world.Levels {
 		for _, tile := range lvl.Tiles {
@@ -26,7 +26,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			pos := lvl.Pos.Add(tile.Pos).ToF()
 			op.GeoM.Translate(pos.X, pos.Y)
-			screen.DrawImage(tileImage.(*ebiten.Image), op)
+			g.worldImg.DrawImage(tileImage.(*ebiten.Image), op)
 		}
 	}
 
@@ -34,13 +34,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// for _, lvl := range g.world.Levels {
 	// 	for _, tile := range lvl.Tiles {
 	// 		pos := lvl.Pos.Add(tile.Pos).Add(space.Vec2I{X: 8, Y: 8})
-	// 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d", tile.TileID), pos.X, pos.Y)
+	// 		ebitenutil.DebugPrintAt(g.worldImg, fmt.Sprintf("%d", tile.TileID), pos.X, pos.Y)
 	// 	}
 	// }
 
 	const pad = 4
 	vector.DrawFilledRect(
-		screen,
+		g.worldImg,
 		float32(g.world.Spawn.X)+pad,
 		float32(g.world.Spawn.Y)+pad,
 		32-pad*2,
@@ -50,7 +50,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	)
 
 	vector.DrawFilledRect(
-		screen,
+		g.worldImg,
 		float32(g.player.Pos.X),
 		float32(g.player.Pos.Y),
 		32,
@@ -58,11 +58,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		colornames.Blue,
 		true,
 	)
-	ebitenutil.DebugPrintAt(screen, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
+	ebitenutil.DebugPrintAt(g.worldImg, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {
 		vector.DrawFilledRect(
-			screen,
+			g.worldImg,
 			float32(player.Pos.X),
 			float32(player.Pos.Y),
 			32,
@@ -70,13 +70,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			colornames.Green,
 			true,
 		)
-		ebitenutil.DebugPrintAt(screen, player.Name, int(player.Pos.X), int(player.Pos.Y))
+		ebitenutil.DebugPrintAt(g.worldImg, player.Name, int(player.Pos.X), int(player.Pos.Y))
 		return true
 	})
+
+	g.camera.Render(g.worldImg, screen)
 
 	debugDraw(screen,
 		fmt.Sprintf("FPS: %0.2f", ebiten.ActualFPS()),
 		fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS()),
+		"",
+		g.camera.String(),
 		"",
 		fmt.Sprintf("Connected: %t", g.connected),
 	)

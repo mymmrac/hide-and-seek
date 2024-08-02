@@ -56,6 +56,18 @@ func (g *Game) Update() error {
 		g.player.Pos.Y += speed
 	}
 
+	g.camera.Position = g.player.Pos.Sub(g.camera.ViewportCenter())
+
+	if ebiten.IsKeyPressed(ebiten.KeyQ) {
+		if g.camera.Zoom > -2400 {
+			g.camera.Zoom -= 1
+		}
+	} else if ebiten.IsKeyPressed(ebiten.KeyE) {
+		if g.camera.Zoom < 2400 {
+			g.camera.Zoom += 1
+		}
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
 		g.events <- EventStartServer
 	}

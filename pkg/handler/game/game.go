@@ -16,6 +16,7 @@ import (
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
+	"github.com/mymmrac/hide-and-seek/pkg/module/camera"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
@@ -35,6 +36,9 @@ type Game struct {
 	connectionID uint64
 	requests     chan *socket.Request
 	responses    chan *socket.Response
+
+	camera   *camera.Camera
+	worldImg *ebiten.Image
 
 	defs  world.Defs
 	world world.World
@@ -62,6 +66,8 @@ func NewGame(
 		connectionID: rand.Uint64(),
 		requests:     nil,
 		responses:    nil,
+		camera:       &camera.Camera{Viewport: space.Vec2F{X: 1080, Y: 720}},
+		worldImg:     ebiten.NewImage(2048, 2048),
 		defs:         world.Defs{},
 		world:        world.World{},
 		tilesets:     make(map[int]*ebiten.Image),
@@ -84,6 +90,7 @@ func (g *Game) Init() error {
 	ebiten.SetWindowSize(1080, 720)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowClosingHandled(true)
+	ebiten.SetVsyncEnabled(false)
 
 	defsFile, err := assets.FS.Open("world/defs.bin")
 	if err != nil {

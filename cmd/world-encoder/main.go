@@ -107,8 +107,8 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					for _, entity := range layer.EntityInstances {
 						if entity.Identifier == "spawn" {
 							wd.Spawn = space.Vec2I{
-								X: entity.WorldX + lvl.WorldX,
-								Y: entity.WorldY + lvl.WorldY,
+								X: entity.WorldX,
+								Y: entity.WorldY,
 							}
 						}
 					}

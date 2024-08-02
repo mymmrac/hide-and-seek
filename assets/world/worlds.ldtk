@@ -1903,8 +1903,8 @@
 				"identifier": "level_0",
 				"iid": "6824d600-25d0-11ef-b999-73b6c82e2635",
 				"uid": 0,
-				"worldX": 0,
-				"worldY": 0,
+				"worldX": 64,
+				"worldY": 128,
 				"worldDepth": 0,
 				"pxWid": 576,
 				"pxHei": 416,
@@ -1957,8 +1957,8 @@
 								"defUid": 66,
 								"px": [224,96],
 								"fieldInstances": [],
-								"__worldX": 224,
-								"__worldY": 96
+								"__worldX": 288,
+								"__worldY": 224
 							},
 							{
 								"__identifier": "glass_table",
@@ -1973,8 +1973,8 @@
 								"defUid": 64,
 								"px": [256,288],
 								"fieldInstances": [],
-								"__worldX": 256,
-								"__worldY": 288
+								"__worldX": 320,
+								"__worldY": 416
 							},
 							{
 								"__identifier": "window",
@@ -1989,8 +1989,8 @@
 								"defUid": 67,
 								"px": [64,32],
 								"fieldInstances": [],
-								"__worldX": 64,
-								"__worldY": 32
+								"__worldX": 128,
+								"__worldY": 160
 							},
 							{
 								"__identifier": "window",
@@ -2005,8 +2005,8 @@
 								"defUid": 67,
 								"px": [160,32],
 								"fieldInstances": [],
-								"__worldX": 160,
-								"__worldY": 32
+								"__worldX": 224,
+								"__worldY": 160
 							},
 							{
 								"__identifier": "big_cabinet",
@@ -2021,8 +2021,8 @@
 								"defUid": 71,
 								"px": [416,128],
 								"fieldInstances": [],
-								"__worldX": 416,
-								"__worldY": 128
+								"__worldX": 480,
+								"__worldY": 256
 							}
 						]
 					},
@@ -2063,8 +2063,8 @@
 								"defUid": 57,
 								"px": [128,160],
 								"fieldInstances": [],
-								"__worldX": 128,
-								"__worldY": 160
+								"__worldX": 192,
+								"__worldY": 288
 							}
 						]
 					},
@@ -2299,8 +2299,8 @@
 				"identifier": "level_1",
 				"iid": "7034d0d0-25d0-11ef-82d4-7d2d9218b515",
 				"uid": 44,
-				"worldX": 576,
-				"worldY": -64,
+				"worldX": 640,
+				"worldY": 64,
 				"worldDepth": 0,
 				"pxWid": 672,
 				"pxHei": 672,
@@ -2353,8 +2353,8 @@
 								"defUid": 67,
 								"px": [224,32],
 								"fieldInstances": [],
-								"__worldX": 800,
-								"__worldY": -32
+								"__worldX": 864,
+								"__worldY": 96
 							},
 							{
 								"__identifier": "window",
@@ -2369,8 +2369,8 @@
 								"defUid": 67,
 								"px": [448,32],
 								"fieldInstances": [],
-								"__worldX": 1024,
-								"__worldY": -32
+								"__worldX": 1088,
+								"__worldY": 96
 							},
 							{
 								"__identifier": "small_pot",
@@ -2385,8 +2385,8 @@
 								"defUid": 66,
 								"px": [352,544],
 								"fieldInstances": [],
-								"__worldX": 928,
-								"__worldY": 480
+								"__worldX": 992,
+								"__worldY": 608
 							},
 							{
 								"__identifier": "big_pot",
@@ -2401,8 +2401,8 @@
 								"defUid": 69,
 								"px": [544,512],
 								"fieldInstances": [],
-								"__worldX": 1120,
-								"__worldY": 448
+								"__worldX": 1184,
+								"__worldY": 576
 							},
 							{
 								"__identifier": "cabinet",
@@ -2417,8 +2417,8 @@
 								"defUid": 70,
 								"px": [32,448],
 								"fieldInstances": [],
-								"__worldX": 608,
-								"__worldY": 384
+								"__worldX": 672,
+								"__worldY": 512
 							},
 							{
 								"__identifier": "cabinet",
@@ -2433,8 +2433,8 @@
 								"defUid": 70,
 								"px": [160,64],
 								"fieldInstances": [],
-								"__worldX": 736,
-								"__worldY": 0
+								"__worldX": 800,
+								"__worldY": 128
 							},
 							{
 								"__identifier": "cabinet",
@@ -2449,8 +2449,8 @@
 								"defUid": 70,
 								"px": [544,64],
 								"fieldInstances": [],
-								"__worldX": 1120,
-								"__worldY": 0
+								"__worldX": 1184,
+								"__worldY": 128
 							},
 							{
 								"__identifier": "wardrobe",
@@ -2465,8 +2465,8 @@
 								"defUid": 72,
 								"px": [192,416],
 								"fieldInstances": [],
-								"__worldX": 768,
-								"__worldY": 352
+								"__worldX": 832,
+								"__worldY": 480
 							},
 							{
 								"__identifier": "small_pot",
@@ -2481,8 +2481,8 @@
 								"defUid": 66,
 								"px": [448,544],
 								"fieldInstances": [],
-								"__worldX": 1024,
-								"__worldY": 480
+								"__worldX": 1088,
+								"__worldY": 608
 							}
 						]
 					},
