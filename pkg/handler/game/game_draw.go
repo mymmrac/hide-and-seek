@@ -58,6 +58,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		colornames.Blue,
 		true,
 	)
+
+	// Draw player collider
+	// vector.StrokeRect(
+	// 	g.worldImg,
+	// 	float32(g.player.Collider.Position.X),
+	// 	float32(g.player.Collider.Position.Y),
+	// 	float32(g.player.Collider.Size.X),
+	// 	float32(g.player.Collider.Size.Y),
+	// 	2,
+	// 	colornames.Lightgreen,
+	// 	true,
+	// )
+
 	ebitenutil.DebugPrintAt(g.worldImg, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {

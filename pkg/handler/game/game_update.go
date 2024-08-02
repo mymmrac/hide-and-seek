@@ -45,16 +45,32 @@ func (g *Game) Update() error {
 	}
 
 	const speed = 5
+	dx, dy := 0.0, 0.0
 	if ebiten.IsKeyPressed(KeyLeft) {
-		g.player.Pos.X -= speed
+		dx -= speed
 	} else if ebiten.IsKeyPressed(KeyRight) {
-		g.player.Pos.X += speed
+		dx += speed
 	}
 	if ebiten.IsKeyPressed(KeyUp) {
-		g.player.Pos.Y -= speed
+		dy -= speed
 	} else if ebiten.IsKeyPressed(KeyDown) {
-		g.player.Pos.Y += speed
+		dy += speed
 	}
+
+	if collision := g.player.Collider.Check(dx, 0); collision != nil {
+		dx = collision.ContactWithObject(collision.Objects[0]).X
+	}
+	g.player.Collider.Position.X += dx
+
+	if collision := g.player.Collider.Check(0, dy); collision != nil {
+		dy = collision.ContactWithObject(collision.Objects[0]).Y
+	}
+	g.player.Collider.Position.Y += dy
+
+	g.player.Collider.Update()
+
+	g.player.Pos.X = g.player.Collider.Position.X
+	g.player.Pos.Y = g.player.Collider.Position.Y
 
 	g.camera.Position = g.player.Pos.Sub(g.camera.ViewportCenter())
 

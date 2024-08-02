@@ -10,6 +10,7 @@ require (
 	github.com/gofiber/contrib/websocket v1.3.2
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/hajimehoshi/ebiten/v2 v2.7.8
+	github.com/solarlune/resolv v0.7.0
 	golang.org/x/image v0.18.0
 	google.golang.org/protobuf v1.34.2
 )

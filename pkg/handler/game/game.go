@@ -13,6 +13,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/solarlune/resolv"
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
@@ -50,6 +51,8 @@ type Game struct {
 	info *socket.Response_Info
 
 	player Player
+
+	space *resolv.Space
 }
 
 func NewGame(
@@ -74,12 +77,11 @@ func NewGame(
 		players:      collection.NewSyncMap[uint64, *Player](),
 		info:         nil,
 		player: Player{
-			Name: "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
-			Pos: space.Vec2F{
-				X: 100,
-				Y: 100,
-			},
+			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
+			Pos:      space.Vec2F{},
+			Collider: resolv.NewObject(0, 0, 32, 32, "player"),
 		},
+		space: resolv.NewSpace(2048, 2048, 32, 32),
 	}
 }
 
@@ -132,6 +134,10 @@ func (g *Game) Init() error {
 	}
 
 	g.player.Pos = g.world.Spawn.ToF()
+	g.player.Collider.Position.X = g.player.Pos.X
+	g.player.Collider.Position.Y = g.player.Pos.Y
+
+	g.space.Add(g.player.Collider)
 
 	return nil
 }
