@@ -65,7 +65,9 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					X: lvl.WorldX,
 					Y: lvl.WorldY,
 				},
-				Tiles: nil,
+				Tiles:    nil,
+				WallSize: space.Vec2I{},
+				Walls:    nil,
 			}
 			for _, layer := range lvl.LayerInstances {
 				switch layer.Identifier {
@@ -102,6 +104,51 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 							TilesetID: layer.TilesetDefUID,
 							TileID:    tID,
 						})
+					}
+				case "layout":
+					k := slices.IndexFunc(ldtk.Defs.Layers, func(layer Layers) bool {
+						return layer.Identifier == "layout"
+					})
+					if k < 0 {
+						return fmt.Errorf("layout layer not found")
+					}
+					layoutLayer := ldtk.Defs.Layers[k]
+
+					wallValue := -1
+					bottomWallValue := -1
+					for _, value := range layoutLayer.IntGridValues {
+						if value.Identifier == "wall" {
+							wallValue = value.Value
+						}
+						if value.Identifier == "bottom_wall" {
+							bottomWallValue = value.Value
+						}
+					}
+					if wallValue < 0 {
+						return fmt.Errorf("wall values not found")
+					}
+					if bottomWallValue < 0 {
+						return fmt.Errorf("bottom wall values not found")
+					}
+
+					lv.WallSize = space.Vec2I{
+						X: layer.GridSize,
+						Y: layer.GridSize,
+					}
+
+					for j, value := range layer.IntGridCsv {
+						switch value {
+						case wallValue:
+							lv.Walls = append(lv.Walls, space.Vec2I{
+								X: j % layer.CWid,
+								Y: j / layer.CWid,
+							})
+						case bottomWallValue:
+							lv.Walls = append(lv.Walls, space.Vec2I{
+								X: j % layer.CWid,
+								Y: j / layer.CWid,
+							})
+						}
 					}
 				case "entities":
 					for _, entity := range layer.EntityInstances {

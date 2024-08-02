@@ -139,6 +139,18 @@ func (g *Game) Init() error {
 
 	g.space.Add(g.player.Collider)
 
+	for _, level := range g.world.Levels {
+		for _, wall := range level.Walls {
+			g.space.Add(resolv.NewObject(
+				float64(wall.X*level.WallSize.X+level.Pos.X),
+				float64(wall.Y*level.WallSize.Y+level.Pos.Y),
+				float64(level.WallSize.X),
+				float64(level.WallSize.Y),
+				"wall",
+			))
+		}
+	}
+
 	return nil
 }
 

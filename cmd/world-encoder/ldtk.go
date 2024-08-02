@@ -51,39 +51,47 @@ type Header struct {
 }
 
 type Layers struct {
-	Type                           string  `json:"__type"`
-	Identifier                     string  `json:"identifier"`
-	Type0                          string  `json:"type"`
-	UID                            int     `json:"uid"`
-	Doc                            any     `json:"doc"`
-	UIColor                        any     `json:"uiColor"`
-	GridSize                       int     `json:"gridSize"`
-	GuideGridWid                   int     `json:"guideGridWid"`
-	GuideGridHei                   int     `json:"guideGridHei"`
-	DisplayOpacity                 int     `json:"displayOpacity"`
-	InactiveOpacity                float64 `json:"inactiveOpacity"`
-	HideInList                     bool    `json:"hideInList"`
-	HideFieldsWhenInactive         bool    `json:"hideFieldsWhenInactive"`
-	CanSelectWhenInactive          bool    `json:"canSelectWhenInactive"`
-	RenderInWorldView              bool    `json:"renderInWorldView"`
-	PxOffsetX                      int     `json:"pxOffsetX"`
-	PxOffsetY                      int     `json:"pxOffsetY"`
-	ParallaxFactorX                int     `json:"parallaxFactorX"`
-	ParallaxFactorY                int     `json:"parallaxFactorY"`
-	ParallaxScaling                bool    `json:"parallaxScaling"`
-	RequiredTags                   []any   `json:"requiredTags"`
-	ExcludedTags                   []any   `json:"excludedTags"`
-	AutoTilesKilledByOtherLayerUID any     `json:"autoTilesKilledByOtherLayerUid"`
-	UIFilterTags                   []any   `json:"uiFilterTags"`
-	UseAsyncRender                 bool    `json:"useAsyncRender"`
-	IntGridValues                  []any   `json:"intGridValues"`
-	IntGridValuesGroups            []any   `json:"intGridValuesGroups"`
-	AutoRuleGroups                 []any   `json:"autoRuleGroups"`
-	AutoSourceLayerDefUID          any     `json:"autoSourceLayerDefUid"`
-	TilesetDefUID                  any     `json:"tilesetDefUid"`
-	TilePivotX                     int     `json:"tilePivotX"`
-	TilePivotY                     int     `json:"tilePivotY"`
-	BiomeFieldUID                  any     `json:"biomeFieldUid"`
+	Type                           string         `json:"__type"`
+	Identifier                     string         `json:"identifier"`
+	Type0                          string         `json:"type"`
+	UID                            int            `json:"uid"`
+	Doc                            any            `json:"doc"`
+	UIColor                        any            `json:"uiColor"`
+	GridSize                       int            `json:"gridSize"`
+	GuideGridWid                   int            `json:"guideGridWid"`
+	GuideGridHei                   int            `json:"guideGridHei"`
+	DisplayOpacity                 int            `json:"displayOpacity"`
+	InactiveOpacity                float64        `json:"inactiveOpacity"`
+	HideInList                     bool           `json:"hideInList"`
+	HideFieldsWhenInactive         bool           `json:"hideFieldsWhenInactive"`
+	CanSelectWhenInactive          bool           `json:"canSelectWhenInactive"`
+	RenderInWorldView              bool           `json:"renderInWorldView"`
+	PxOffsetX                      int            `json:"pxOffsetX"`
+	PxOffsetY                      int            `json:"pxOffsetY"`
+	ParallaxFactorX                int            `json:"parallaxFactorX"`
+	ParallaxFactorY                int            `json:"parallaxFactorY"`
+	ParallaxScaling                bool           `json:"parallaxScaling"`
+	RequiredTags                   []any          `json:"requiredTags"`
+	ExcludedTags                   []any          `json:"excludedTags"`
+	AutoTilesKilledByOtherLayerUID any            `json:"autoTilesKilledByOtherLayerUid"`
+	UIFilterTags                   []any          `json:"uiFilterTags"`
+	UseAsyncRender                 bool           `json:"useAsyncRender"`
+	IntGridValues                  []IntGridValue `json:"intGridValues"`
+	IntGridValuesGroups            []any          `json:"intGridValuesGroups"`
+	AutoRuleGroups                 []any          `json:"autoRuleGroups"`
+	AutoSourceLayerDefUID          any            `json:"autoSourceLayerDefUid"`
+	TilesetDefUID                  any            `json:"tilesetDefUid"`
+	TilePivotX                     int            `json:"tilePivotX"`
+	TilePivotY                     int            `json:"tilePivotY"`
+	BiomeFieldUID                  any            `json:"biomeFieldUid"`
+}
+
+type IntGridValue struct {
+	Value      int    `json:"value"`
+	Identifier string `json:"identifier"`
+	Color      string `json:"color"`
+	Tile       any    `json:"tile"`
+	GroupUid   int    `json:"groupUid"`
 }
 
 type TileRect struct {
@@ -207,7 +215,7 @@ type LayerInstances struct {
 	PxOffsetY          int               `json:"pxOffsetY"`
 	Visible            bool              `json:"visible"`
 	OptionalRules      []any             `json:"optionalRules"`
-	IntGridCsv         []any             `json:"intGridCsv"`
+	IntGridCsv         []int             `json:"intGridCsv"`
 	AutoLayerTiles     []AutoLayerTile   `json:"autoLayerTiles"`
 	Seed               int               `json:"seed"`
 	OverrideTilesetUID any               `json:"overrideTilesetUid"`

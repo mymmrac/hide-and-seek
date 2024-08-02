@@ -58,19 +58,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		colornames.Blue,
 		true,
 	)
-
-	// Draw player collider
-	// vector.StrokeRect(
-	// 	g.worldImg,
-	// 	float32(g.player.Collider.Position.X),
-	// 	float32(g.player.Collider.Position.Y),
-	// 	float32(g.player.Collider.Size.X),
-	// 	float32(g.player.Collider.Size.Y),
-	// 	2,
-	// 	colornames.Lightgreen,
-	// 	true,
-	// )
-
 	ebitenutil.DebugPrintAt(g.worldImg, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {
@@ -86,6 +73,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrintAt(g.worldImg, player.Name, int(player.Pos.X), int(player.Pos.Y))
 		return true
 	})
+
+	// Draw colliders
+	// for _, obj := range g.space.Objects() {
+	// 	vector.StrokeRect(
+	// 		g.worldImg,
+	// 		float32(obj.Position.X),
+	// 		float32(obj.Position.Y),
+	// 		float32(obj.Size.X),
+	// 		float32(obj.Size.Y),
+	// 		2,
+	// 		colornames.Lightgreen,
+	// 		true,
+	// 	)
+	// }
 
 	g.camera.Render(g.worldImg, screen)
 

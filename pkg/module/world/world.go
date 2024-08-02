@@ -18,8 +18,10 @@ type World struct {
 }
 
 type Level struct {
-	Pos   space.Vec2I
-	Tiles []Tile
+	Pos      space.Vec2I
+	Tiles    []Tile
+	WallSize space.Vec2I
+	Walls    []space.Vec2I
 }
 
 type Tile struct {
