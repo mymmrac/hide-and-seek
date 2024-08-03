@@ -69,7 +69,7 @@ func NewGame(
 		connectionID: rand.Uint64(),
 		requests:     nil,
 		responses:    nil,
-		camera:       &camera.Camera{Viewport: space.Vec2F{X: 1080, Y: 720}},
+		camera:       &camera.Camera{Viewport: space.Vec2F{X: 1080, Y: 720}, Zoom: 100},
 		worldImg:     ebiten.NewImage(2048, 2048),
 		defs:         world.Defs{},
 		world:        world.World{},
@@ -81,7 +81,7 @@ func NewGame(
 			Pos:      space.Vec2F{},
 			Collider: resolv.NewObject(0, 0, 32, 32, "player"),
 		},
-		space: resolv.NewSpace(2048, 2048, 32, 32),
+		space: resolv.NewSpace(2048, 2048, 4, 4),
 	}
 }
 

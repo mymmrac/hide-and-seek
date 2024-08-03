@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
@@ -44,7 +46,7 @@ func (g *Game) Update() error {
 		// Continue
 	}
 
-	const speed = 5
+	const speed = 4.0
 	dx, dy := 0.0, 0.0
 	if ebiten.IsKeyPressed(KeyLeft) {
 		dx -= speed
@@ -58,12 +60,18 @@ func (g *Game) Update() error {
 	}
 
 	if collision := g.player.Collider.Check(dx, 0); collision != nil {
-		dx = collision.ContactWithObject(collision.Objects[0]).X
+		contact := collision.ContactWithObject(collision.Objects[0])
+		if math.Abs(contact.X) < math.Abs(dx) {
+			dx = contact.X
+		}
 	}
 	g.player.Collider.Position.X += dx
 
 	if collision := g.player.Collider.Check(0, dy); collision != nil {
-		dy = collision.ContactWithObject(collision.Objects[0]).Y
+		contact := collision.ContactWithObject(collision.Objects[0])
+		if math.Abs(contact.Y) < math.Abs(dy) {
+			dy = contact.Y
+		}
 	}
 	g.player.Collider.Position.Y += dy
 

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"github.com/solarlune/resolv"
+
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
@@ -42,13 +44,20 @@ func (g *Game) processMessage(msg *socket.Response) {
 
 		g.players.Lock()
 		players := g.players.Raw()
-		for _, player := range resp.Info.Players {
-			players[player.Id] = &Player{
-				Name: player.Username,
-				Pos:  space.Vec2F{},
+		for _, playerJoin := range resp.Info.Players {
+			if playerJoin.Id == resp.Info.PlayerId {
+				continue
 			}
+
+			player := &Player{
+				Name:     playerJoin.Username,
+				Pos:      space.Vec2F{},
+				Collider: resolv.NewObject(0, 0, 32, 32, "player"),
+			}
+
+			g.space.Add(player.Collider)
+			players[playerJoin.Id] = player
 		}
-		delete(players, resp.Info.PlayerId)
 		g.players.Unlock()
 
 		logger.FromContext(g.ctx).Infof("Info: %+v", resp.Info)
@@ -57,17 +66,26 @@ func (g *Game) processMessage(msg *socket.Response) {
 			return
 		}
 
-		g.players.Set(resp.PlayerJoin.Id, &Player{
-			Name: resp.PlayerJoin.Username,
-			Pos:  space.Vec2F{},
-		})
+		player := &Player{
+			Name:     resp.PlayerJoin.Username,
+			Pos:      space.Vec2F{},
+			Collider: resolv.NewObject(0, 0, 32, 32, "player"),
+		}
+
+		g.space.Add(player.Collider)
+		g.players.Set(resp.PlayerJoin.Id, player)
+
 		logger.FromContext(g.ctx).Infof("Player joined: %+v", resp.PlayerJoin)
 	case *socket.Response_PlayerLeave:
 		if g.info != nil && g.info.PlayerId == resp.PlayerLeave {
 			return
 		}
 
-		g.players.Remove(resp.PlayerLeave)
+		player, ok := g.players.GetAndRemove(resp.PlayerLeave)
+		if ok {
+			g.space.Remove(player.Collider)
+		}
+
 		logger.FromContext(g.ctx).Infof("Player left: %+v", resp.PlayerLeave)
 	case *socket.Response_PlayerMove_:
 		player, ok := g.players.Get(resp.PlayerMove.PlayerId)
@@ -76,9 +94,15 @@ func (g *Game) processMessage(msg *socket.Response) {
 			return
 		}
 
+		oldPos := player.Pos
 		player.Pos = space.Vec2F{
 			X: resp.PlayerMove.Pos.X,
 			Y: resp.PlayerMove.Pos.Y,
+		}
+		if player.Pos != oldPos {
+			player.Collider.Position.X = player.Pos.X
+			player.Collider.Position.Y = player.Pos.Y
+			player.Collider.Update()
 		}
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)

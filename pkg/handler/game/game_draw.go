@@ -90,6 +90,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.camera.Render(g.worldImg, screen)
 
+	// Draw world position
+	// curX, curY := ebiten.CursorPosition()
+	// wX, wY := g.camera.ScreenToWorld(float64(curX), float64(curY))
+	// ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%.2f, %.2f", wX, wY), curX+16, curY+16)
+
 	debugDraw(screen,
 		fmt.Sprintf("FPS: %0.2f", ebiten.ActualFPS()),
 		fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS()),

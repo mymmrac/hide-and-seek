@@ -33,6 +33,16 @@ func (m *SyncMap[K, V]) Get(key K) (V, bool) {
 	return value, ok
 }
 
+func (m *SyncMap[K, V]) GetAndRemove(key K) (V, bool) {
+	m.Lock()
+	value, ok := m.values[key]
+	if ok {
+		delete(m.values, key)
+	}
+	m.Unlock()
+	return value, ok
+}
+
 func (m *SyncMap[K, V]) Has(key K) bool {
 	m.RLock()
 	_, ok := m.values[key]
