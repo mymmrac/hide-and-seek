@@ -65,14 +65,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			g.worldImg,
 			float32(player.Pos.X),
 			float32(player.Pos.Y),
-			32,
-			32,
+			float32(player.Size.X),
+			float32(player.Size.Y),
 			colornames.Green,
 			true,
 		)
 		ebitenutil.DebugPrintAt(g.worldImg, player.Name, int(player.Pos.X), int(player.Pos.Y))
 		return true
 	})
+
+	// Draw space
+	// cp.DrawSpace(g.space, cpdrawer.NewDrawer(g.worldImg))
 
 	// Draw colliders
 	// for _, obj := range g.space.Objects() {
@@ -102,6 +105,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.camera.String(),
 		"",
 		fmt.Sprintf("Connected: %t", g.connected),
+		"",
+		fmt.Sprintf("Player: %v %v", g.player.Collider.Body().Position(), g.player.Collider.Body().Velocity()),
 	)
 }
 

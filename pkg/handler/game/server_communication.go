@@ -1,7 +1,7 @@
 package game
 
 import (
-	"github.com/solarlune/resolv"
+	"github.com/jakecoffman/cp/v2"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
@@ -49,13 +49,19 @@ func (g *Game) processMessage(msg *socket.Response) {
 				continue
 			}
 
+			playerBody := g.space.AddBody(cp.NewBody(1, cp.INFINITY))
+
+			playerShape := g.space.AddShape(cp.NewBox(playerBody, 32, 32, 1))
+			playerShape.SetElasticity(1)
+			playerShape.SetFriction(1)
+
 			player := &Player{
 				Name:     playerJoin.Username,
 				Pos:      space.Vec2F{},
-				Collider: resolv.NewObject(0, 0, 32, 32, "player"),
+				Size:     space.Vec2F{X: 32, Y: 32},
+				Collider: playerShape,
 			}
 
-			g.space.Add(player.Collider)
 			players[playerJoin.Id] = player
 		}
 		g.players.Unlock()
@@ -69,10 +75,10 @@ func (g *Game) processMessage(msg *socket.Response) {
 		player := &Player{
 			Name:     resp.PlayerJoin.Username,
 			Pos:      space.Vec2F{},
-			Collider: resolv.NewObject(0, 0, 32, 32, "player"),
+			Collider: cp.NewBox(cp.NewKinematicBody(), 32, 32, 1),
 		}
 
-		g.space.Add(player.Collider)
+		g.space.AddShape(player.Collider)
 		g.players.Set(resp.PlayerJoin.Id, player)
 
 		logger.FromContext(g.ctx).Infof("Player joined: %+v", resp.PlayerJoin)
@@ -83,7 +89,7 @@ func (g *Game) processMessage(msg *socket.Response) {
 
 		player, ok := g.players.GetAndRemove(resp.PlayerLeave)
 		if ok {
-			g.space.Remove(player.Collider)
+			g.space.RemoveShape(player.Collider)
 		}
 
 		logger.FromContext(g.ctx).Infof("Player left: %+v", resp.PlayerLeave)
@@ -100,9 +106,10 @@ func (g *Game) processMessage(msg *socket.Response) {
 			Y: resp.PlayerMove.Pos.Y,
 		}
 		if player.Pos != oldPos {
-			player.Collider.Position.X = player.Pos.X
-			player.Collider.Position.Y = player.Pos.Y
-			player.Collider.Update()
+			player.Collider.Body().SetPosition(cp.Vector{
+				X: player.Pos.X + player.Size.X/2,
+				Y: player.Pos.Y + player.Size.Y/2,
+			})
 		}
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)

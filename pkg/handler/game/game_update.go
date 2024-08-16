@@ -1,8 +1,6 @@
 package game
 
 import (
-	"math"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
@@ -46,7 +44,7 @@ func (g *Game) Update() error {
 		// Continue
 	}
 
-	const speed = 4.0
+	const speed = 100.0
 	dx, dy := 0.0, 0.0
 	if ebiten.IsKeyPressed(KeyLeft) {
 		dx -= speed
@@ -59,26 +57,21 @@ func (g *Game) Update() error {
 		dy += speed
 	}
 
-	if collision := g.player.Collider.Check(dx, 0); collision != nil {
-		contact := collision.ContactWithObject(collision.Objects[0])
-		if math.Abs(contact.X) < math.Abs(dx) {
-			dx = contact.X
-		}
-	}
-	g.player.Collider.Position.X += dx
+	g.player.Collider.Body().SetVelocity(dx, dy)
 
-	if collision := g.player.Collider.Check(0, dy); collision != nil {
-		contact := collision.ContactWithObject(collision.Objects[0])
-		if math.Abs(contact.Y) < math.Abs(dy) {
-			dy = contact.Y
-		}
-	}
-	g.player.Collider.Position.Y += dy
+	// collisionPenetration := cp.Vector{}
+	// g.player.Collider.Body().EachArbiter(func(arb *cp.Arbiter) {
+	// 	penetration := arb.Normal().Mult(arb.ContactPointSet().Points[0].Distance)
+	// 	if penetration.LengthSq() > collisionPenetration.LengthSq() {
+	// 		collisionPenetration = penetration
+	// 	}
+	// })
 
-	g.player.Collider.Update()
+	g.space.Step(1.0 / float64(ebiten.TPS()))
 
-	g.player.Pos.X = g.player.Collider.Position.X
-	g.player.Pos.Y = g.player.Collider.Position.Y
+	pos := g.player.Collider.Body().Position()
+	g.player.Pos.X = pos.X - g.player.Size.X/2
+	g.player.Pos.Y = pos.Y - g.player.Size.Y/2
 
 	g.camera.Position = g.player.Pos.Sub(g.camera.ViewportCenter())
 

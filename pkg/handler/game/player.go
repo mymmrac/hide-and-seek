@@ -1,7 +1,7 @@
 package game
 
 import (
-	"github.com/solarlune/resolv"
+	"github.com/jakecoffman/cp/v2"
 
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
@@ -9,5 +9,6 @@ import (
 type Player struct {
 	Name     string
 	Pos      space.Vec2F
-	Collider *resolv.Object
+	Size     space.Vec2F
+	Collider *cp.Shape
 }

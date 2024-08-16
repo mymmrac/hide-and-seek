@@ -13,7 +13,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/solarlune/resolv"
+	"github.com/jakecoffman/cp/v2"
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
@@ -52,13 +52,21 @@ type Game struct {
 
 	player Player
 
-	space *resolv.Space
+	space *cp.Space
 }
 
 func NewGame(
 	ctx context.Context,
 	cancel context.CancelFunc,
 ) *Game {
+	sp := cp.NewSpace()
+
+	playerBody := sp.AddBody(cp.NewBody(1, cp.INFINITY))
+
+	playerShape := sp.AddShape(cp.NewBox(playerBody, 32, 32, 1))
+	playerShape.SetElasticity(1)
+	playerShape.SetFriction(1)
+
 	return &Game{
 		ctx:          ctx,
 		cancel:       cancel,
@@ -79,9 +87,10 @@ func NewGame(
 		player: Player{
 			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
 			Pos:      space.Vec2F{},
-			Collider: resolv.NewObject(0, 0, 32, 32, "player"),
+			Size:     space.Vec2F{X: 32, Y: 32},
+			Collider: playerShape,
 		},
-		space: resolv.NewSpace(2048, 2048, 4, 4),
+		space: sp,
 	}
 }
 
@@ -134,20 +143,22 @@ func (g *Game) Init() error {
 	}
 
 	g.player.Pos = g.world.Spawn.ToF()
-	g.player.Collider.Position.X = g.player.Pos.X
-	g.player.Collider.Position.Y = g.player.Pos.Y
-
-	g.space.Add(g.player.Collider)
+	g.player.Collider.Body().SetPosition(cp.Vector{
+		X: g.player.Pos.X + g.player.Size.X/2,
+		Y: g.player.Pos.Y + g.player.Size.Y/2,
+	})
 
 	for _, level := range g.world.Levels {
 		for _, wall := range level.Walls {
-			g.space.Add(resolv.NewObject(
-				float64(wall.X*level.WallSize.X+level.Pos.X),
-				float64(wall.Y*level.WallSize.Y+level.Pos.Y),
-				float64(level.WallSize.X),
-				float64(level.WallSize.Y),
-				"wall",
-			))
+			body := g.space.AddBody(cp.NewStaticBody())
+			body.SetPosition(cp.Vector{
+				X: float64(wall.X*level.WallSize.X + level.Pos.X + level.WallSize.X/2),
+				Y: float64(wall.Y*level.WallSize.Y + level.Pos.Y + level.WallSize.Y/2),
+			})
+
+			shape := g.space.AddShape(cp.NewBox(body, float64(level.WallSize.X), float64(level.WallSize.Y), 1))
+			shape.SetElasticity(0)
+			shape.SetFriction(0)
 		}
 	}
 

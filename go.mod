@@ -1,17 +1,17 @@
 module github.com/mymmrac/hide-and-seek
 
-go 1.22.5
+go 1.23.0
 
 require (
 	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/charmbracelet/log v0.4.0
-	github.com/envoyproxy/protoc-gen-validate v1.0.4
+	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/fasthttp/websocket v1.5.10
 	github.com/gofiber/contrib/websocket v1.3.2
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/hajimehoshi/ebiten/v2 v2.7.8
-	github.com/solarlune/resolv v0.7.0
-	golang.org/x/image v0.18.0
+	github.com/jakecoffman/cp/v2 v2.0.2
+	golang.org/x/image v0.19.0
 	google.golang.org/protobuf v1.34.2
 )
 
@@ -39,6 +39,6 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 )
