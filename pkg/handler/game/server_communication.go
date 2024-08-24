@@ -1,8 +1,6 @@
 package game
 
 import (
-	"github.com/jakecoffman/cp/v2"
-
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
@@ -49,17 +47,11 @@ func (g *Game) processMessage(msg *socket.Response) {
 				continue
 			}
 
-			playerBody := g.space.AddBody(cp.NewBody(1, cp.INFINITY))
-
-			playerShape := g.space.AddShape(cp.NewBox(playerBody, 32, 32, 1))
-			playerShape.SetElasticity(1)
-			playerShape.SetFriction(1)
-
 			player := &Player{
 				Name:     playerJoin.Username,
 				Pos:      space.Vec2F{},
 				Size:     space.Vec2F{X: 32, Y: 32},
-				Collider: playerShape,
+				Collider: g.cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
 			}
 
 			players[playerJoin.Id] = player
@@ -75,10 +67,9 @@ func (g *Game) processMessage(msg *socket.Response) {
 		player := &Player{
 			Name:     resp.PlayerJoin.Username,
 			Pos:      space.Vec2F{},
-			Collider: cp.NewBox(cp.NewKinematicBody(), 32, 32, 1),
+			Collider: g.cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
 		}
 
-		g.space.AddShape(player.Collider)
 		g.players.Set(resp.PlayerJoin.Id, player)
 
 		logger.FromContext(g.ctx).Infof("Player joined: %+v", resp.PlayerJoin)
@@ -89,7 +80,7 @@ func (g *Game) processMessage(msg *socket.Response) {
 
 		player, ok := g.players.GetAndRemove(resp.PlayerLeave)
 		if ok {
-			g.space.RemoveShape(player.Collider)
+			g.cw.Remove(player.Collider)
 		}
 
 		logger.FromContext(g.ctx).Infof("Player left: %+v", resp.PlayerLeave)
@@ -106,10 +97,7 @@ func (g *Game) processMessage(msg *socket.Response) {
 			Y: resp.PlayerMove.Pos.Y,
 		}
 		if player.Pos != oldPos {
-			player.Collider.Body().SetPosition(cp.Vector{
-				X: player.Pos.X + player.Size.X/2,
-				Y: player.Pos.Y + player.Size.Y/2,
-			})
+			player.Collider.SetPosition(player.Pos)
 		}
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)

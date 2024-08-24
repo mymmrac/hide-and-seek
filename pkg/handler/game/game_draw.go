@@ -74,22 +74,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		return true
 	})
 
-	// Draw space
-	// cp.DrawSpace(g.space, cpdrawer.NewDrawer(g.worldImg))
-
 	// Draw colliders
-	// for _, obj := range g.space.Objects() {
-	// 	vector.StrokeRect(
-	// 		g.worldImg,
-	// 		float32(obj.Position.X),
-	// 		float32(obj.Position.Y),
-	// 		float32(obj.Size.X),
-	// 		float32(obj.Size.Y),
-	// 		2,
-	// 		colornames.Lightgreen,
-	// 		true,
-	// 	)
-	// }
+	for _, obj := range g.cw.Objects() {
+		vector.StrokeRect(
+			g.worldImg,
+			float32(obj.Position().X),
+			float32(obj.Position().Y),
+			float32(obj.Size().X),
+			float32(obj.Size().Y),
+			2,
+			colornames.Lightgreen,
+			true,
+		)
+	}
 
 	g.camera.Render(g.worldImg, screen)
 
@@ -105,8 +102,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.camera.String(),
 		"",
 		fmt.Sprintf("Connected: %t", g.connected),
-		"",
-		fmt.Sprintf("Player: %v %v", g.player.Collider.Body().Position(), g.player.Collider.Body().Velocity()),
 	)
 }
 

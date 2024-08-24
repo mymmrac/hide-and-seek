@@ -13,12 +13,12 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/jakecoffman/cp/v2"
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/camera"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
+	"github.com/mymmrac/hide-and-seek/pkg/module/collider"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 	"github.com/mymmrac/hide-and-seek/pkg/module/world"
@@ -52,21 +52,15 @@ type Game struct {
 
 	player Player
 
-	space *cp.Space
+	collisions bool
+	cw         *collider.World
 }
 
 func NewGame(
 	ctx context.Context,
 	cancel context.CancelFunc,
 ) *Game {
-	sp := cp.NewSpace()
-
-	playerBody := sp.AddBody(cp.NewBody(1, cp.INFINITY))
-
-	playerShape := sp.AddShape(cp.NewBox(playerBody, 32, 32, 1))
-	playerShape.SetElasticity(1)
-	playerShape.SetFriction(1)
-
+	cw := collider.NewWorld()
 	return &Game{
 		ctx:          ctx,
 		cancel:       cancel,
@@ -88,9 +82,10 @@ func NewGame(
 			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
 			Pos:      space.Vec2F{},
 			Size:     space.Vec2F{X: 32, Y: 32},
-			Collider: playerShape,
+			Collider: cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
 		},
-		space: sp,
+		collisions: true,
+		cw:         cw,
 	}
 }
 
@@ -143,22 +138,17 @@ func (g *Game) Init() error {
 	}
 
 	g.player.Pos = g.world.Spawn.ToF()
-	g.player.Collider.Body().SetPosition(cp.Vector{
-		X: g.player.Pos.X + g.player.Size.X/2,
-		Y: g.player.Pos.Y + g.player.Size.Y/2,
-	})
+	g.player.Collider.SetPosition(g.player.Pos)
 
 	for _, level := range g.world.Levels {
 		for _, wall := range level.Walls {
-			body := g.space.AddBody(cp.NewStaticBody())
-			body.SetPosition(cp.Vector{
-				X: float64(wall.X*level.WallSize.X + level.Pos.X + level.WallSize.X/2),
-				Y: float64(wall.Y*level.WallSize.Y + level.Pos.Y + level.WallSize.Y/2),
-			})
-
-			shape := g.space.AddShape(cp.NewBox(body, float64(level.WallSize.X), float64(level.WallSize.Y), 1))
-			shape.SetElasticity(0)
-			shape.SetFriction(0)
+			g.cw.NewObject(
+				space.Vec2F{
+					X: float64(wall.X*level.WallSize.X + level.Pos.X),
+					Y: float64(wall.Y*level.WallSize.Y + level.Pos.Y),
+				},
+				level.WallSize.ToF(),
+			)
 		}
 	}
 

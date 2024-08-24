@@ -1,5 +1,7 @@
 package space
 
+import "math"
+
 type Vec2I struct {
 	X int
 	Y int
@@ -24,6 +26,22 @@ type Vec2F struct {
 	Y float64
 }
 
+func (v Vec2F) Len2() float64 {
+	return v.X*v.X + v.Y*v.Y
+}
+
+func (v Vec2F) Len() float64 {
+	return math.Sqrt(v.Len2())
+}
+
+func (v Vec2F) Norm() Vec2F {
+	l := v.Len()
+	return Vec2F{
+		X: v.X / l,
+		Y: v.Y / l,
+	}
+}
+
 func (v Vec2F) Add(u Vec2F) Vec2F {
 	return Vec2F{
 		X: v.X + u.X,
@@ -31,9 +49,48 @@ func (v Vec2F) Add(u Vec2F) Vec2F {
 	}
 }
 
+func (v Vec2F) Dist2(u Vec2F) float64 {
+	return (v.X-u.X)*(v.X-u.X) + (v.Y-u.Y)*(v.Y-u.Y)
+}
+
+func (v Vec2F) AddX(x float64) Vec2F {
+	return Vec2F{
+		X: v.X + x,
+		Y: v.Y,
+	}
+}
+
+func (v Vec2F) AddY(y float64) Vec2F {
+	return Vec2F{
+		X: v.X,
+		Y: v.Y + y,
+	}
+}
+
 func (v Vec2F) Sub(u Vec2F) Vec2F {
 	return Vec2F{
 		X: v.X - u.X,
 		Y: v.Y - u.Y,
+	}
+}
+
+func (v Vec2F) Scale(n float64) Vec2F {
+	return Vec2F{
+		X: v.X * n,
+		Y: v.Y * n,
+	}
+}
+
+func (v Vec2F) OX() Vec2F {
+	return Vec2F{
+		X: v.X,
+		Y: 0,
+	}
+}
+
+func (v Vec2F) OY() Vec2F {
+	return Vec2F{
+		X: 0,
+		Y: v.Y,
 	}
 }

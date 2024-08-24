@@ -6,6 +6,7 @@ import (
 
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
+	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
 
 func (g *Game) Update() error {
@@ -44,34 +45,39 @@ func (g *Game) Update() error {
 		// Continue
 	}
 
-	const speed = 100.0
-	dx, dy := 0.0, 0.0
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		g.collisions = !g.collisions
+	}
+
+	const speed = 4.0
+	move := space.Vec2F{}
 	if ebiten.IsKeyPressed(KeyLeft) {
-		dx -= speed
+		move.X -= speed
 	} else if ebiten.IsKeyPressed(KeyRight) {
-		dx += speed
+		move.X += speed
 	}
 	if ebiten.IsKeyPressed(KeyUp) {
-		dy -= speed
+		move.Y -= speed
 	} else if ebiten.IsKeyPressed(KeyDown) {
-		dy += speed
+		move.Y += speed
 	}
 
-	g.player.Collider.Body().SetVelocity(dx, dy)
+	coll := g.player.Collider
+	if g.collisions {
+		if collision := coll.Collide(move.OX()); collision != nil {
+			move.X = collision.Resolve().X
+		}
 
-	// collisionPenetration := cp.Vector{}
-	// g.player.Collider.Body().EachArbiter(func(arb *cp.Arbiter) {
-	// 	penetration := arb.Normal().Mult(arb.ContactPointSet().Points[0].Distance)
-	// 	if penetration.LengthSq() > collisionPenetration.LengthSq() {
-	// 		collisionPenetration = penetration
-	// 	}
-	// })
+		if collision := coll.Collide(move.OY()); collision != nil {
+			move.Y = collision.Resolve().Y
+		}
+	}
 
-	g.space.Step(1.0 / float64(ebiten.TPS()))
+	pos := coll.Position().Add(move)
+	coll.SetPosition(pos)
 
-	pos := g.player.Collider.Body().Position()
-	g.player.Pos.X = pos.X - g.player.Size.X/2
-	g.player.Pos.Y = pos.Y - g.player.Size.Y/2
+	g.player.Pos.X = pos.X
+	g.player.Pos.Y = pos.Y
 
 	g.camera.Position = g.player.Pos.Sub(g.camera.ViewportCenter())
 
