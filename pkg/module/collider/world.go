@@ -49,6 +49,9 @@ func (w *World) Collide(obj *Object, move space.Vec2F, tags ...string) *Collisio
 	objects := stream.Filter(stream.Stream(w.objects), func(o *Object) bool {
 		return o != obj && collection.ContainsAll(o.tags, stream.Collect(stream.Map(stream.Stream(tags), unique.Make))...)
 	})
+	objects = stream.Filter(objects, func(o *Object) bool {
+		return obj.Center().Dist2(o.Center()) <= obj.Size().Len2()+o.Size().Len2()
+	})
 
 	var collision *Collision
 	for object := range objects {
