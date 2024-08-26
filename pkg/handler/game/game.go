@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -129,6 +130,7 @@ func (g *Game) Init() error {
 		}
 
 		g.tilesets[id] = ebiten.NewImageFromImage(tilesetImage)
+		log.Debugf("Loaded tileset %d %q", id, tileset.Path)
 	}
 
 	worldFile, err := assets.FS.Open("world/world_office_0.bin")

@@ -39,19 +39,70 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 	}
 
 	defs := world.Defs{
-		Tilesets: make(map[int]world.Tileset, len(ldtk.Defs.Tilesets)),
+		Tilesets: make(map[int]world.TilesetDef, len(ldtk.Defs.Tilesets)),
+		Entities: make(map[int]world.EntityDef),
 	}
+
+	tileSizes := make(map[int]space.Vec2I)
 	for _, tileset := range ldtk.Defs.Tilesets {
-		defs.Tilesets[tileset.UID] = world.Tileset{
-			Path: tileset.RelPath,
-			TileSize: space.Vec2I{
-				X: tileset.TileGridSize,
-				Y: tileset.TileGridSize,
-			},
-			Tiles: make(map[int]space.Vec2I),
+		defs.Tilesets[tileset.UID] = world.TilesetDef{
+			Path:  tileset.RelPath,
+			Tiles: make(map[int]world.TileDef),
+		}
+		tileSizes[tileset.UID] = space.Vec2I{
+			X: tileset.TileGridSize,
+			Y: tileset.TileGridSize,
 		}
 	}
+
 	lastTileID := 1
+	findOrAddTile := func(tilesetID int, tileDef world.TileDef) (int, error) {
+		tileset, ok := defs.Tilesets[tilesetID]
+		if !ok {
+			return 0, fmt.Errorf("tileset %d not found", tilesetID)
+		}
+
+		var tileID int
+		for otherTileID, otherTileDef := range tileset.Tiles {
+			if otherTileDef == tileDef {
+				tileID = otherTileID
+				break
+			}
+		}
+		if tileID == 0 {
+			tileID = lastTileID
+			tileset.Tiles[lastTileID] = tileDef
+			lastTileID++
+		}
+
+		return tileID, nil
+	}
+
+	for _, entity := range ldtk.Defs.Entities {
+		var tileID int
+		tileID, err = findOrAddTile(entity.TilesetID, world.TileDef{
+			Pos: space.Vec2I{
+				X: entity.TileRect.X,
+				Y: entity.TileRect.Y,
+			},
+			Size: space.Vec2I{
+				X: entity.TileRect.W,
+				Y: entity.TileRect.H,
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		defs.Entities[entity.UID] = world.EntityDef{
+			TilesetID: entity.TilesetID,
+			TileID:    tileID,
+			Size: space.Vec2I{
+				X: entity.Width,
+				Y: entity.Height,
+			},
+		}
+	}
 
 	for _, w := range ldtk.Worlds {
 		wd := world.World{
@@ -68,41 +119,33 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 				Tiles:    nil,
 				WallSize: space.Vec2I{},
 				Walls:    nil,
+				Entities: nil,
 			}
 			for _, layer := range lvl.LayerInstances {
 				switch layer.Identifier {
 				case "walls_and_floor":
 					for _, tile := range layer.AutoLayerTiles {
-						tileset, ok := defs.Tilesets[layer.TilesetDefUID]
-						if !ok {
-							return fmt.Errorf("tileset %d not found", layer.TilesetDefUID)
+						tileDef := world.TileDef{
+							Pos: space.Vec2I{
+								X: tile.Src[0],
+								Y: tile.Src[1],
+							},
+							Size: tileSizes[layer.TilesetDefUID],
 						}
 
-						tilePos := space.Vec2I{
-							X: tile.Src[0],
-							Y: tile.Src[1],
-						}
-
-						var tID int
-						for tileID, tileDefPos := range tileset.Tiles {
-							if tileDefPos == tilePos {
-								tID = tileID
-								break
-							}
-						}
-						if tID == 0 {
-							tID = lastTileID
-							tileset.Tiles[lastTileID] = tilePos
-							lastTileID++
+						var tileID int
+						tileID, err = findOrAddTile(layer.TilesetDefUID, tileDef)
+						if err != nil {
+							return err
 						}
 
 						lv.Tiles = append(lv.Tiles, world.Tile{
+							TilesetID: layer.TilesetDefUID,
+							TileID:    tileID,
 							Pos: space.Vec2I{
 								X: tile.Px[0],
 								Y: tile.Px[1],
 							},
-							TilesetID: layer.TilesetDefUID,
-							TileID:    tID,
 						})
 					}
 				case "layout":
@@ -150,6 +193,16 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 							})
 						}
 					}
+				case "furniture_entities":
+					for _, entity := range layer.EntityInstances {
+						lv.Entities = append(lv.Entities, world.Entity{
+							EntityID: entity.DefUID,
+							Pos: space.Vec2I{
+								X: entity.WorldX,
+								Y: entity.WorldY,
+							},
+						})
+					}
 				case "entities":
 					for _, entity := range layer.EntityInstances {
 						if entity.Identifier == "spawn" {
@@ -169,6 +222,10 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					return cmp.Compare(a.TileID, b.TileID)
 				}
 				return cmp.Compare(a.TilesetID, b.TilesetID)
+			})
+
+			slices.SortFunc(lv.Entities, func(a, b world.Entity) int {
+				return cmp.Compare(a.EntityID, b.EntityID)
 			})
 
 			wd.Levels[i] = lv

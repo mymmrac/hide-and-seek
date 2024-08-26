@@ -19,8 +19,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			tileset := g.defs.Tilesets[tile.TilesetID]
 			tileDef := tileset.Tiles[tile.TileID]
 			tileImage := g.tilesets[tile.TilesetID].SubImage(image.Rect(
-				tileDef.X, tileDef.Y,
-				tileDef.X+tileset.TileSize.X, tileDef.Y+tileset.TileSize.Y,
+				tileDef.Pos.X, tileDef.Pos.Y,
+				tileDef.Pos.X+tileDef.Size.X, tileDef.Pos.Y+tileDef.Size.Y,
 			))
 
 			op := &ebiten.DrawImageOptions{}
@@ -37,6 +37,24 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 		ebitenutil.DebugPrintAt(g.worldImg, fmt.Sprintf("%d", tile.TileID), pos.X, pos.Y)
 	// 	}
 	// }
+
+	for _, lvl := range g.world.Levels {
+		for _, entity := range lvl.Entities {
+			def := g.defs.Entities[entity.EntityID]
+
+			tileset := g.defs.Tilesets[def.TilesetID]
+			tileDef := tileset.Tiles[def.TileID]
+			tileImage := g.tilesets[def.TilesetID].SubImage(image.Rect(
+				tileDef.Pos.X, tileDef.Pos.Y,
+				tileDef.Pos.X+tileDef.Size.X, tileDef.Pos.Y+tileDef.Size.Y,
+			))
+
+			op := &ebiten.DrawImageOptions{}
+			pos := entity.Pos.ToF()
+			op.GeoM.Translate(pos.X, pos.Y)
+			g.worldImg.DrawImage(tileImage.(*ebiten.Image), op)
+		}
+	}
 
 	const pad = 4
 	vector.DrawFilledRect(
