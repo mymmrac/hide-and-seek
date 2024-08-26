@@ -51,14 +51,14 @@ func (g *Game) Update() error {
 
 	const speed = 4.0
 	move := space.Vec2F{}
-	if ebiten.IsKeyPressed(KeyLeft) {
+	if g.keybindings.IsActionPressed(ActionWalkLeft) {
 		move.X -= speed
-	} else if ebiten.IsKeyPressed(KeyRight) {
+	} else if g.keybindings.IsActionPressed(ActionWalkRight) {
 		move.X += speed
 	}
-	if ebiten.IsKeyPressed(KeyUp) {
+	if g.keybindings.IsActionPressed(ActionWalkUp) {
 		move.Y -= speed
-	} else if ebiten.IsKeyPressed(KeyDown) {
+	} else if g.keybindings.IsActionPressed(ActionWalkDown) {
 		move.Y += speed
 	}
 

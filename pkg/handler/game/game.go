@@ -38,6 +38,8 @@ type Game struct {
 	requests     chan *socket.Request
 	responses    chan *socket.Response
 
+	keybindings KeyBindings
+
 	camera   *camera.Camera
 	worldImg *ebiten.Image
 
@@ -71,6 +73,7 @@ func NewGame(
 		connectionID: rand.Uint64(),
 		requests:     nil,
 		responses:    nil,
+		keybindings:  DefaultKeyBindings.Clone(),
 		camera:       &camera.Camera{Viewport: space.Vec2F{X: 1080, Y: 720}, Zoom: 100},
 		worldImg:     ebiten.NewImage(2048, 2048),
 		defs:         world.Defs{},

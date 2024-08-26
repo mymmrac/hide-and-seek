@@ -75,18 +75,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	})
 
 	// Draw colliders
-	for _, obj := range g.cw.Objects() {
-		vector.StrokeRect(
-			g.worldImg,
-			float32(obj.Position().X),
-			float32(obj.Position().Y),
-			float32(obj.Size().X),
-			float32(obj.Size().Y),
-			2,
-			colornames.Lightgreen,
-			true,
-		)
-	}
+	// for _, obj := range g.cw.Objects() {
+	// 	vector.StrokeRect(
+	// 		g.worldImg,
+	// 		float32(obj.Position().X),
+	// 		float32(obj.Position().Y),
+	// 		float32(obj.Size().X),
+	// 		float32(obj.Size().Y),
+	// 		2,
+	// 		colornames.Lightgreen,
+	// 		true,
+	// 	)
+	// }
 
 	g.camera.Render(g.worldImg, screen)
 
