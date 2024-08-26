@@ -29,11 +29,10 @@ type World struct {
 }
 
 type Level struct {
-	Pos      space.Vec2I
-	Tiles    []Tile
-	WallSize space.Vec2I
-	Walls    []space.Vec2I
-	Entities []Entity
+	Pos       space.Vec2I
+	Tiles     []Tile
+	Entities  []Entity
+	Colliders []Collider
 }
 
 type Tile struct {
@@ -45,4 +44,10 @@ type Tile struct {
 type Entity struct {
 	EntityID int
 	Pos      space.Vec2I
+}
+
+type Collider struct {
+	Tags []string
+	Pos  space.Vec2I
+	Size space.Vec2I
 }

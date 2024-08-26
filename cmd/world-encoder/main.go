@@ -79,6 +79,10 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 	}
 
 	for _, entity := range ldtk.Defs.Entities {
+		if entity.TilesetID == 0 {
+			continue
+		}
+
 		var tileID int
 		tileID, err = findOrAddTile(entity.TilesetID, world.TileDef{
 			Pos: space.Vec2I{
@@ -91,7 +95,7 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 			},
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("entity def: %w", err)
 		}
 
 		defs.Entities[entity.UID] = world.EntityDef{
@@ -116,10 +120,9 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					X: lvl.WorldX,
 					Y: lvl.WorldY,
 				},
-				Tiles:    nil,
-				WallSize: space.Vec2I{},
-				Walls:    nil,
-				Entities: nil,
+				Tiles:     nil,
+				Entities:  nil,
+				Colliders: nil,
 			}
 			for _, layer := range lvl.LayerInstances {
 				switch layer.Identifier {
@@ -136,7 +139,7 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 						var tileID int
 						tileID, err = findOrAddTile(layer.TilesetDefUID, tileDef)
 						if err != nil {
-							return err
+							return fmt.Errorf("walls and floor: %w", err)
 						}
 
 						lv.Tiles = append(lv.Tiles, world.Tile{
@@ -174,24 +177,28 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 						return fmt.Errorf("bottom wall values not found")
 					}
 
-					lv.WallSize = space.Vec2I{
+					size := space.Vec2I{
 						X: layer.GridSize,
 						Y: layer.GridSize,
 					}
 
 					for j, value := range layer.IntGridCsv {
+						var pos space.Vec2I
 						switch value {
-						case wallValue:
-							lv.Walls = append(lv.Walls, space.Vec2I{
+						case wallValue, bottomWallValue:
+							pos = space.Vec2I{
 								X: j % layer.CWid,
 								Y: j / layer.CWid,
-							})
-						case bottomWallValue:
-							lv.Walls = append(lv.Walls, space.Vec2I{
-								X: j % layer.CWid,
-								Y: j / layer.CWid,
-							})
+							}
+						default:
+							continue
 						}
+
+						lv.Colliders = append(lv.Colliders, world.Collider{
+							Tags: []string{"solid"},
+							Pos:  pos.ScaleVec(size).Add(lv.Pos),
+							Size: size,
+						})
 					}
 				case "furniture_entities":
 					for _, entity := range layer.EntityInstances {
@@ -202,6 +209,22 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 								Y: entity.WorldY,
 							},
 						})
+					}
+				case "colliders":
+					for _, entity := range layer.EntityInstances {
+						if entity.Identifier == "solid" {
+							lv.Colliders = append(lv.Colliders, world.Collider{
+								Tags: []string{"solid"},
+								Pos: space.Vec2I{
+									X: entity.WorldX,
+									Y: entity.WorldY,
+								},
+								Size: space.Vec2I{
+									X: entity.Width,
+									Y: entity.Height,
+								},
+							})
+						}
 					}
 				case "entities":
 					for _, entity := range layer.EntityInstances {

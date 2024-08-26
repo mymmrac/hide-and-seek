@@ -146,14 +146,8 @@ func (g *Game) Init() error {
 	g.player.Collider.SetPosition(g.player.Pos)
 
 	for _, level := range g.world.Levels {
-		for _, wall := range level.Walls {
-			g.cw.NewObject(
-				space.Vec2F{
-					X: float64(wall.X*level.WallSize.X + level.Pos.X),
-					Y: float64(wall.Y*level.WallSize.Y + level.Pos.Y),
-				},
-				level.WallSize.ToF(),
-			)
+		for _, coll := range level.Colliders {
+			g.cw.NewObject(coll.Pos.ToF(), coll.Size.ToF(), coll.Tags...)
 		}
 	}
 
