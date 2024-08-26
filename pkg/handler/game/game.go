@@ -25,6 +25,11 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/module/world"
 )
 
+const (
+	defaultScreenWidth  = 1280
+	defaultScreenHeight = 720
+)
+
 type Game struct {
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -75,13 +80,16 @@ func NewGame(
 		requests:     nil,
 		responses:    nil,
 		keybindings:  DefaultKeyBindings.Clone(),
-		camera:       &camera.Camera{Viewport: space.Vec2F{X: 1080, Y: 720}, Zoom: 100},
-		worldImg:     ebiten.NewImage(2048, 2048),
-		defs:         world.Defs{},
-		world:        world.World{},
-		tilesets:     make(map[int]*ebiten.Image),
-		players:      collection.NewSyncMap[uint64, *Player](),
-		info:         nil,
+		camera: &camera.Camera{
+			Viewport: space.Vec2F{X: defaultScreenWidth, Y: defaultScreenHeight},
+			Zoom:     100,
+		},
+		worldImg: ebiten.NewImage(2048, 2048),
+		defs:     world.Defs{},
+		world:    world.World{},
+		tilesets: make(map[int]*ebiten.Image),
+		players:  collection.NewSyncMap[uint64, *Player](),
+		info:     nil,
 		player: Player{
 			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
 			Pos:      space.Vec2F{},
@@ -97,7 +105,7 @@ func (g *Game) Init() error {
 	g.wg.Add(1) // WG: Game loop
 
 	ebiten.SetWindowTitle("Hide & Seek")
-	ebiten.SetWindowSize(1080, 720)
+	ebiten.SetWindowSize(defaultScreenWidth, defaultScreenHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowClosingHandled(true)
 	ebiten.SetVsyncEnabled(false)
@@ -155,7 +163,7 @@ func (g *Game) Init() error {
 }
 
 func (g *Game) Layout(_, _ int) (screenWidth, screenHeight int) {
-	return 1080, 720
+	return defaultScreenWidth, defaultScreenHeight
 }
 
 func (g *Game) Shutdown() {
