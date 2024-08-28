@@ -12,12 +12,12 @@ import (
 	"sync"
 
 	"github.com/charmbracelet/log"
-	"github.com/gofiber/fiber/v2"
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/camera"
+	"github.com/mymmrac/hide-and-seek/pkg/module/chttp"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collider"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
@@ -35,7 +35,7 @@ type Game struct {
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
 
-	httpClient *fiber.Client
+	httpClient chttp.Client
 
 	events chan EventType
 
@@ -73,7 +73,7 @@ func NewGame(
 		ctx:          ctx,
 		cancel:       cancel,
 		wg:           sync.WaitGroup{},
-		httpClient:   &fiber.Client{},
+		httpClient:   chttp.DefaultClient,
 		events:       make(chan EventType, 32),
 		connected:    false,
 		connectionID: rand.Uint64(),

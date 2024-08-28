@@ -23,6 +23,10 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	if g.keybindings.IsActionJustPressed(ActionFullScreen) {
+		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+	}
+
 	select {
 	case event := <-g.events:
 		switch event {

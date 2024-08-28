@@ -11,10 +11,13 @@ type Action uint
 
 const (
 	_ Action = iota
+
 	ActionWalkUp
 	ActionWalkDown
 	ActionWalkLeft
 	ActionWalkRight
+
+	ActionFullScreen
 )
 
 type KeyBindings map[Action][]ebiten.Key
@@ -24,6 +27,8 @@ var DefaultKeyBindings = KeyBindings{
 	ActionWalkDown:  []ebiten.Key{ebiten.KeyS, ebiten.KeyDown},
 	ActionWalkLeft:  []ebiten.Key{ebiten.KeyA, ebiten.KeyLeft},
 	ActionWalkRight: []ebiten.Key{ebiten.KeyD, ebiten.KeyRight},
+
+	ActionFullScreen: []ebiten.Key{ebiten.KeyF11},
 }
 
 func (k KeyBindings) Clone() KeyBindings {

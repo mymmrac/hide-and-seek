@@ -3,8 +3,6 @@ package game
 import (
 	"fmt"
 
-	"github.com/fasthttp/websocket"
-
 	"github.com/mymmrac/hide-and-seek/pkg/api/communication"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
 	"github.com/mymmrac/hide-and-seek/pkg/module/api"
@@ -15,6 +13,7 @@ const serverHostname = "localhost:4242"
 
 func (g *Game) connectToServer() {
 	resp, err := api.ProtoCall[communication.Start_Response](
+		g.ctx,
 		g.httpClient,
 		fmt.Sprintf("http://%s/start", serverHostname),
 		&communication.Start_Request{
@@ -27,11 +26,7 @@ func (g *Game) connectToServer() {
 		return
 	}
 
-	conn, _, err := websocket.DefaultDialer.DialContext(
-		g.ctx,
-		fmt.Sprintf("ws://%s/ws?token=", serverHostname)+resp.GetResult().Token,
-		nil,
-	)
+	conn, err := g.httpClient.WS(g.ctx, fmt.Sprintf("ws://%s/ws?token=", serverHostname)+resp.GetResult().Token)
 	if err != nil {
 		logger.FromContext(g.ctx).Errorf("Error connecting to server: %s", err)
 		g.events <- EventDisconnectedFromServer

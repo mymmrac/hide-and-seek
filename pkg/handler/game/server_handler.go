@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/fasthttp/websocket"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
@@ -12,16 +11,15 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/module/ws"
 )
 
-func (g *Game) handleConnection(conn *websocket.Conn) {
+func (g *Game) handleConnection(conn ws.Connector) {
 	ctx, ctxCancel := context.WithCancel(g.ctx)
 	log := logger.FromContext(ctx)
-
-	log.Debugf("Connected to server: %s", conn.RemoteAddr().String())
+	log.Debugf("Connected to server")
 
 	cancel := sync.OnceFunc(func() {
 		ctxCancel()
 		ws.WriteCloseMessage(conn)
-		log.Debugf("Connection to server closed: %s", conn.RemoteAddr().String())
+		log.Debugf("Connection to server closed")
 		g.events <- EventDisconnectedFromServer
 		g.wg.Done() // WG: Server connection
 	})
