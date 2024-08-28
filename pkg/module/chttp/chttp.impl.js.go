@@ -9,7 +9,7 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/module/ws"
 )
 
-var DefaultClient = nil
+var DefaultClient Client = nil
 
 type jsClient struct{}
 
