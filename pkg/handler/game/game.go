@@ -109,6 +109,7 @@ func (g *Game) Init() error {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowClosingHandled(true)
 	ebiten.SetVsyncEnabled(false)
+	ebiten.SetScreenClearedEveryFrame(false)
 
 	defsFile, err := assets.FS.Open("world/defs.bin")
 	if err != nil {

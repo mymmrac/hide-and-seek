@@ -12,7 +12,8 @@ import (
 )
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.worldImg.Fill(colornames.Darkgray)
+	screen.Fill(colornames.Darkslategray)
+	g.worldImg.Fill(colornames.Darkslategray)
 
 	for _, lvl := range g.world.Levels {
 		for _, tile := range lvl.Tiles {
