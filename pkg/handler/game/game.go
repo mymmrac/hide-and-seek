@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"image"
-	"io/fs"
 	"math/rand/v2"
 	"strconv"
 	"strings"
@@ -58,7 +57,8 @@ type Game struct {
 
 	info *socket.Response_Info
 
-	player Player
+	player            Player
+	playerSpriteSheet *ebiten.Image
 
 	collisions bool
 	cw         *collider.World
@@ -94,10 +94,12 @@ func NewGame(
 			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
 			Pos:      space.Vec2F{},
 			Size:     space.Vec2F{X: 32, Y: 32},
+			Dir:      space.Vec2I{X: 0, Y: 1},
 			Collider: cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
 		},
-		collisions: true,
-		cw:         cw,
+		playerSpriteSheet: nil,
+		collisions:        true,
+		cw:                cw,
 	}
 }
 
@@ -126,19 +128,13 @@ func (g *Game) Init() error {
 			continue
 		}
 
-		var tilesetImageFile fs.File
-		tilesetImageFile, err = assets.FS.Open(strings.TrimPrefix(tileset.Path, "../"))
+		var tilesetImage *ebiten.Image
+		tilesetImage, err = LoadImage(strings.TrimPrefix(tileset.Path, "../"))
 		if err != nil {
-			return fmt.Errorf("open %d %q tileset: %w", id, tileset.Path, err)
+			return fmt.Errorf("load %d tileset image: %w", id, err)
 		}
 
-		var tilesetImage image.Image
-		tilesetImage, _, err = image.Decode(tilesetImageFile)
-		if err != nil {
-			return fmt.Errorf("decode %d tileset image: %w", id, err)
-		}
-
-		g.tilesets[id] = ebiten.NewImageFromImage(tilesetImage)
+		g.tilesets[id] = tilesetImage
 		log.Debugf("Loaded tileset %d %q", id, tileset.Path)
 	}
 
@@ -149,6 +145,11 @@ func (g *Game) Init() error {
 
 	if err = gob.NewDecoder(worldFile).Decode(&g.world); err != nil {
 		return fmt.Errorf("decode world: %w", err)
+	}
+
+	g.playerSpriteSheet, err = LoadImage("images/Premade_Character_32x32_19.png")
+	if err != nil {
+		return fmt.Errorf("load player sprite sheet: %w", err)
 	}
 
 	g.player.Pos = g.world.Spawn.ToF()
@@ -170,4 +171,18 @@ func (g *Game) Layout(_, _ int) (screenWidth, screenHeight int) {
 func (g *Game) Shutdown() {
 	g.cancel()
 	g.wg.Wait()
+}
+
+func LoadImage(filePath string) (*ebiten.Image, error) {
+	imageFile, err := assets.FS.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("open %q: %w", filePath, err)
+	}
+
+	decodedImage, _, err := image.Decode(imageFile)
+	if err != nil {
+		return nil, fmt.Errorf("decode %q image: %w", filePath, err)
+	}
+
+	return ebiten.NewImageFromImage(decodedImage), nil
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
+
+	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 )
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -68,16 +70,27 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		true,
 	)
 
-	vector.DrawFilledRect(
-		g.worldImg,
-		float32(g.player.Pos.X),
-		float32(g.player.Pos.Y),
-		32,
-		32,
-		colornames.Blue,
-		true,
-	)
-	ebitenutil.DebugPrintAt(g.worldImg, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y))
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(g.player.Pos.X, g.player.Pos.Y-32)
+
+	var playerSprite image.Rectangle
+	switch g.player.Dir {
+	case space.Vec2I{X: 1, Y: 0}:
+		playerSprite = image.Rect(32*0, 0, 32*1, 64)
+	case space.Vec2I{X: -1, Y: 0}:
+		playerSprite = image.Rect(32*2, 0, 32*3, 64)
+	case space.Vec2I{X: 0, Y: 1}:
+		playerSprite = image.Rect(32*3, 0, 32*4, 64)
+	case space.Vec2I{X: 0, Y: -1}:
+		playerSprite = image.Rect(32*1, 0, 32*2, 64)
+	default:
+		panic("unreachable")
+	}
+
+	playerImg := g.playerSpriteSheet.SubImage(playerSprite).(*ebiten.Image)
+	g.worldImg.DrawImage(playerImg, op)
+
+	ebitenutil.DebugPrintAt(g.worldImg, g.player.Name, int(g.player.Pos.X), int(g.player.Pos.Y)-32)
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {
 		vector.DrawFilledRect(

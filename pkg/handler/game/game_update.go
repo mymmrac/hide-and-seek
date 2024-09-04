@@ -55,15 +55,23 @@ func (g *Game) Update() error {
 
 	const speed = 4.0
 	move := space.Vec2F{}
-	if g.keybindings.IsActionPressed(ActionWalkLeft) {
-		move.X -= speed
-	} else if g.keybindings.IsActionPressed(ActionWalkRight) {
-		move.X += speed
-	}
 	if g.keybindings.IsActionPressed(ActionWalkUp) {
 		move.Y -= speed
+		g.player.Dir.X = 0
+		g.player.Dir.Y = -1
 	} else if g.keybindings.IsActionPressed(ActionWalkDown) {
 		move.Y += speed
+		g.player.Dir.X = 0
+		g.player.Dir.Y = 1
+	}
+	if g.keybindings.IsActionPressed(ActionWalkLeft) {
+		move.X -= speed
+		g.player.Dir.X = -1
+		g.player.Dir.Y = 0
+	} else if g.keybindings.IsActionPressed(ActionWalkRight) {
+		move.X += speed
+		g.player.Dir.X = 1
+		g.player.Dir.Y = 0
 	}
 
 	coll := g.player.Collider
