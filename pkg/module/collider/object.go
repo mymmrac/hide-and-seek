@@ -32,6 +32,11 @@ func (o *Object) SetPosition(pos space.Vec2F) {
 	o.pos = pos
 }
 
+func (o *Object) Move(move space.Vec2F) {
+	o.pos.X += move.X
+	o.pos.Y += move.Y
+}
+
 func (o *Object) Position() space.Vec2F {
 	return o.pos
 }

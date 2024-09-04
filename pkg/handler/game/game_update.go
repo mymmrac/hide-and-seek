@@ -85,11 +85,8 @@ func (g *Game) Update() error {
 		}
 	}
 
-	pos := coll.Position().Add(move)
-	coll.SetPosition(pos)
-
-	g.player.Pos.X = pos.X
-	g.player.Pos.Y = pos.Y
+	coll.Move(move)
+	g.player.UpdatePosition()
 
 	g.camera.Position = g.player.Pos.Sub(g.camera.ViewportCenter())
 

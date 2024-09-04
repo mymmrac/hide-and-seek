@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"math/rand/v2"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -57,7 +56,7 @@ type Game struct {
 
 	info *socket.Response_Info
 
-	player            Player
+	player            *Player
 	playerSpriteSheet *ebiten.Image
 
 	collisions bool
@@ -84,19 +83,13 @@ func NewGame(
 			Viewport: space.Vec2F{X: defaultScreenWidth, Y: defaultScreenHeight},
 			Zoom:     100,
 		},
-		worldImg: ebiten.NewImage(2048, 2048),
-		defs:     world.Defs{},
-		world:    world.World{},
-		tilesets: make(map[int]*ebiten.Image),
-		players:  collection.NewSyncMap[uint64, *Player](),
-		info:     nil,
-		player: Player{
-			Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
-			Pos:      space.Vec2F{},
-			Size:     space.Vec2F{X: 32, Y: 32},
-			Dir:      space.Vec2I{X: 0, Y: 1},
-			Collider: cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
-		},
+		worldImg:          ebiten.NewImage(2048, 2048),
+		defs:              world.Defs{},
+		world:             world.World{},
+		tilesets:          make(map[int]*ebiten.Image),
+		players:           collection.NewSyncMap[uint64, *Player](),
+		info:              nil,
+		player:            NewPlayer(cw),
 		playerSpriteSheet: nil,
 		collisions:        true,
 		cw:                cw,
@@ -152,8 +145,8 @@ func (g *Game) Init() error {
 		return fmt.Errorf("load player sprite sheet: %w", err)
 	}
 
-	g.player.Pos = g.world.Spawn.ToF()
-	g.player.Collider.SetPosition(g.player.Pos)
+	g.player.Collider.SetPosition(g.world.Spawn.ToF().Add(playerColliderOffset))
+	g.player.UpdatePosition()
 
 	for _, level := range g.world.Levels {
 		for _, coll := range level.Colliders {
