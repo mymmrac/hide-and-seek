@@ -47,12 +47,8 @@ func (g *Game) processMessage(msg *socket.Response) {
 				continue
 			}
 
-			player := &Player{
-				Name:     playerJoin.Username,
-				Pos:      space.Vec2F{},
-				Size:     space.Vec2F{X: 32, Y: 32},
-				Collider: g.cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
-			}
+			player := NewPlayer(g.cw)
+			player.Name = playerJoin.Username
 
 			players[playerJoin.Id] = player
 		}
@@ -64,11 +60,8 @@ func (g *Game) processMessage(msg *socket.Response) {
 			return
 		}
 
-		player := &Player{
-			Name:     resp.PlayerJoin.Username,
-			Pos:      space.Vec2F{},
-			Collider: g.cw.NewObject(space.Vec2F{}, space.Vec2F{X: 32, Y: 32}),
-		}
+		player := NewPlayer(g.cw)
+		player.Name = resp.PlayerJoin.Username
 
 		g.players.Set(resp.PlayerJoin.Id, player)
 
@@ -91,13 +84,15 @@ func (g *Game) processMessage(msg *socket.Response) {
 			return
 		}
 
-		oldPos := player.Pos
-		player.Pos = space.Vec2F{
+		oldPos := player.Collider.Position()
+		newPos := space.Vec2F{
 			X: resp.PlayerMove.Pos.X,
 			Y: resp.PlayerMove.Pos.Y,
 		}
-		if player.Pos != oldPos {
-			player.Collider.SetPosition(player.Pos)
+
+		if newPos != oldPos {
+			player.Collider.SetPosition(newPos)
+			player.UpdatePosition()
 		}
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)
