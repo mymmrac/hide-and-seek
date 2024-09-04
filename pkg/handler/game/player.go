@@ -35,7 +35,7 @@ func (p *Player) UpdatePosition() {
 
 var playerColliderOffset = space.Vec2F{X: 4, Y: 8}
 
-func (p *Player) Draw(screen, spriteSheet *ebiten.Image) {
+func (p *Player) Draw(screen, spriteSheet *ebiten.Image) DrawCall {
 	var playerSprite image.Rectangle
 	switch p.Dir {
 	case space.Vec2I{X: 1, Y: 0}:
@@ -53,7 +53,12 @@ func (p *Player) Draw(screen, spriteSheet *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(p.Pos.X, p.Pos.Y-32)
 	playerImg := spriteSheet.SubImage(playerSprite).(*ebiten.Image)
-	screen.DrawImage(playerImg, op)
 
-	ebitenutil.DebugPrintAt(screen, p.Name, int(p.Pos.X), int(p.Pos.Y)-32)
+	return DrawCall{
+		Y: p.Pos.Y - 32,
+		F: func() {
+			screen.DrawImage(playerImg, op)
+			ebitenutil.DebugPrintAt(screen, p.Name, int(p.Pos.X), int(p.Pos.Y)-32)
+		},
+	}
 }

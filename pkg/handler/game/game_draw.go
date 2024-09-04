@@ -1,12 +1,14 @@
 package game
 
 import (
+	"cmp"
 	"fmt"
 	"image"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"golang.org/x/exp/slices"
 	"golang.org/x/image/colornames"
 )
 
@@ -50,6 +52,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	true,
 	// )
 
+	var drawCalls []DrawCall
+
 	for _, lvl := range g.world.Levels {
 		for _, entity := range lvl.Entities {
 			def := g.defs.Entities[entity.EntityID]
@@ -64,16 +68,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			pos := entity.Pos.ToF()
 			op.GeoM.Translate(pos.X, pos.Y)
-			g.worldImg.DrawImage(tileImage.(*ebiten.Image), op)
+			drawCalls = append(drawCalls, DrawCall{
+				Y: pos.Y,
+				F: func() {
+					g.worldImg.DrawImage(tileImage.(*ebiten.Image), op)
+				},
+			})
 		}
 	}
 
-	g.player.Draw(g.worldImg, g.playerSpriteSheet)
+	drawCalls = append(drawCalls, g.player.Draw(g.worldImg, g.playerSpriteSheet))
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {
-		player.Draw(g.worldImg, g.playerSpriteSheet)
+		drawCalls = append(drawCalls, player.Draw(g.worldImg, g.playerSpriteSheet))
 		return true
 	})
+
+	slices.SortStableFunc(drawCalls, func(a, b DrawCall) int {
+		return cmp.Compare(a.Y, b.Y)
+	})
+	for _, drawCall := range drawCalls {
+		drawCall.F()
+	}
 
 	// Draw colliders
 	// for _, obj := range g.cw.Objects() {
@@ -108,4 +124,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func debugDraw(screen *ebiten.Image, lines ...string) {
 	ebitenutil.DebugPrint(screen, strings.Join(lines, "\n"))
+}
+
+type DrawCall struct {
+	Y float64
+	F func()
 }
