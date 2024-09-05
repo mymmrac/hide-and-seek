@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"math/rand/v2"
+	"os"
 	"strings"
 	"sync"
 
@@ -33,7 +34,8 @@ type Game struct {
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
 
-	httpClient chttp.Client
+	httpClient    chttp.Client
+	serverAddress string
 
 	events chan EventType
 
@@ -70,16 +72,17 @@ func NewGame(
 ) *Game {
 	cw := collider.NewWorld()
 	return &Game{
-		ctx:          ctx,
-		cancel:       cancel,
-		wg:           sync.WaitGroup{},
-		httpClient:   chttp.DefaultClient,
-		events:       make(chan EventType, 32),
-		connected:    false,
-		connectionID: rand.Uint64(),
-		requests:     nil,
-		responses:    nil,
-		keybindings:  DefaultKeyBindings.Clone(),
+		ctx:           ctx,
+		cancel:        cancel,
+		wg:            sync.WaitGroup{},
+		httpClient:    chttp.DefaultClient,
+		serverAddress: "localhost:4242",
+		events:        make(chan EventType, 32),
+		connected:     false,
+		connectionID:  rand.Uint64(),
+		requests:      nil,
+		responses:     nil,
+		keybindings:   DefaultKeyBindings.Clone(),
 		camera: &camera.Camera{
 			Viewport: space.Vec2F{X: defaultScreenWidth, Y: defaultScreenHeight},
 			Zoom:     100,
@@ -107,6 +110,10 @@ func (g *Game) Init() error {
 	ebiten.SetWindowClosingHandled(true)
 	ebiten.SetVsyncEnabled(false)
 	ebiten.SetScreenClearedEveryFrame(false)
+
+	if len(os.Args) == 2 {
+		g.serverAddress = os.Args[1]
+	}
 
 	defsFile, err := assets.FS.Open("world/defs.bin")
 	if err != nil {

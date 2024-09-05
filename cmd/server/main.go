@@ -27,9 +27,14 @@ func main() {
 
 	go srv.Run(ctx)
 
+	port := "4242"
+	if len(os.Args) == 2 {
+		port = os.Args[1]
+	}
+
 	go func() {
 		defer cancel()
-		if err := app.Listen(":4242"); err != nil {
+		if err := app.Listen(":" + port); err != nil {
 			log.Errorf("Error running server: %s", err)
 		}
 	}()

@@ -24,3 +24,15 @@ tasks:
     cmds:
       - go install github.com/stormcat24/protodep@latest
       - go install github.com/envoyproxy/protoc-gen-validate/cmd/protoc-gen-validate-go@latest
+
+  build:release:
+    desc: "Build release"
+    cmds:
+      - echo "Encoding world..."
+      - go run ./cmd/world-encoder
+
+      - echo "Building client..."
+      - go build -tags release -o ./bin/hide-and-seek ./cmd/game
+
+      - echo "Building server..."
+      - go build -tags release -o ./bin/hide-and-seek-server ./cmd/server

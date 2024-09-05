@@ -9,13 +9,11 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 )
 
-const serverHostname = "localhost:4242"
-
 func (g *Game) connectToServer() {
 	resp, err := api.ProtoCall[communication.Start_Response](
 		g.ctx,
 		g.httpClient,
-		fmt.Sprintf("http://%s/start", serverHostname),
+		fmt.Sprintf("http://%s/start", g.serverAddress),
 		&communication.Start_Request{
 			Username: g.player.Name,
 		},
@@ -26,7 +24,7 @@ func (g *Game) connectToServer() {
 		return
 	}
 
-	conn, err := g.httpClient.WS(g.ctx, fmt.Sprintf("ws://%s/ws?token=", serverHostname)+resp.GetResult().Token)
+	conn, err := g.httpClient.WS(g.ctx, fmt.Sprintf("ws://%s/ws?token=", g.serverAddress)+resp.GetResult().Token)
 	if err != nil {
 		logger.FromContext(g.ctx).Errorf("Error connecting to server: %s", err)
 		g.events <- EventDisconnectedFromServer
