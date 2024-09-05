@@ -1,6 +1,9 @@
 package space
 
-import "math"
+import (
+	"math"
+	"math/rand/v2"
+)
 
 type Vec2I struct {
 	X int
@@ -31,6 +34,13 @@ func (v Vec2I) ScaleVec(u Vec2I) Vec2I {
 type Vec2F struct {
 	X float64
 	Y float64
+}
+
+func RandomVec2F() Vec2F {
+	return Vec2F{
+		X: rand.Float64(),
+		Y: rand.Float64(),
+	}
 }
 
 func (v Vec2F) IsZero() bool {

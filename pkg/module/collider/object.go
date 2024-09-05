@@ -102,7 +102,11 @@ func (o *Object) StaticCollisionWith(other *Object) *space.Vec2F {
 		return nil
 	}
 
-	dir := o.Center().Sub(other.Center()).Norm()
+	dir := o.Center().Sub(other.Center())
+	if dir.IsZero() {
+		dir = space.RandomVec2F()
+	}
+	dir = dir.Norm()
 
 	minX := min((o.pos.X+o.size.X)-other.pos.X, (other.pos.X+other.size.X)-o.pos.X)
 	minY := min((o.pos.Y+o.size.Y)-other.pos.Y, (other.pos.Y+other.size.Y)-o.pos.Y)

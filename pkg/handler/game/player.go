@@ -13,19 +13,21 @@ import (
 )
 
 type Player struct {
-	Name     string
-	Pos      space.Vec2F
-	Dir      space.Vec2I
-	Moving   bool
-	Collider *collider.Object
+	Name       string
+	Pos        space.Vec2F
+	Dir        space.Vec2I
+	Moving     bool
+	Collider   *collider.Object
+	TickOffset int
 }
 
 func NewPlayer(cw *collider.World) *Player {
 	return &Player{
-		Name:     "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
-		Pos:      space.Vec2F{},
-		Dir:      space.Vec2I{X: 0, Y: 1},
-		Collider: cw.NewObject(playerColliderOffset, space.Vec2F{X: 24, Y: 24}),
+		Name:       "test" + strconv.FormatUint(rand.Uint64N(9000)+1000, 10),
+		Pos:        space.Vec2F{},
+		Dir:        space.Vec2I{X: 0, Y: 1},
+		Collider:   cw.NewObject(playerColliderOffset, space.Vec2F{X: 24, Y: 24}),
+		TickOffset: rand.IntN(512),
 	}
 }
 
@@ -61,7 +63,7 @@ func (p *Player) Draw(screen, spriteSheet *ebiten.Image, ticks int) DrawCall {
 		dy = 1
 		animationSpeed = 16
 	}
-	dx += (ticks / animationSpeed) % frameCount
+	dx += ((ticks + p.TickOffset) / animationSpeed) % frameCount
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(p.Pos.X, p.Pos.Y-32)
