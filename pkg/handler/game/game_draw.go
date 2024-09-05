@@ -4,11 +4,11 @@ import (
 	"cmp"
 	"fmt"
 	"image"
+	"slices"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"golang.org/x/exp/slices"
 	"golang.org/x/image/colornames"
 )
 

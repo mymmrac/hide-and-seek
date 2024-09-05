@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"image"
 	"math/rand/v2"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 
 	"github.com/mymmrac/hide-and-seek/assets"
 	"github.com/mymmrac/hide-and-seek/pkg/api/socket"
@@ -19,6 +19,7 @@ import (
 	"github.com/mymmrac/hide-and-seek/pkg/module/chttp"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collection"
 	"github.com/mymmrac/hide-and-seek/pkg/module/collider"
+	"github.com/mymmrac/hide-and-seek/pkg/module/loader"
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
 	"github.com/mymmrac/hide-and-seek/pkg/module/world"
@@ -64,6 +65,9 @@ type Game struct {
 
 	collisions bool
 	cw         *collider.World
+
+	audioCtx        *audio.Context
+	backgroundMusic *audio.Player
 }
 
 func NewGame(
@@ -98,6 +102,8 @@ func NewGame(
 		playerSpriteSheet: nil,
 		collisions:        true,
 		cw:                cw,
+		audioCtx:          audio.NewContext(44100),
+		backgroundMusic:   nil,
 	}
 }
 
@@ -131,7 +137,7 @@ func (g *Game) Init() error {
 		}
 
 		var tilesetImage *ebiten.Image
-		tilesetImage, err = LoadImage(strings.TrimPrefix(tileset.Path, "../"))
+		tilesetImage, err = loader.Image(strings.TrimPrefix(tileset.Path, "../"))
 		if err != nil {
 			return fmt.Errorf("load %d tileset image: %w", id, err)
 		}
@@ -149,7 +155,7 @@ func (g *Game) Init() error {
 		return fmt.Errorf("decode world: %w", err)
 	}
 
-	g.playerSpriteSheet, err = LoadImage("images/Premade_Character_32x32_19.png")
+	g.playerSpriteSheet, err = loader.Image("images/Premade_Character_32x32_19.png")
 	if err != nil {
 		return fmt.Errorf("load player sprite sheet: %w", err)
 	}
@@ -163,6 +169,14 @@ func (g *Game) Init() error {
 		}
 	}
 
+	g.backgroundMusic, err = loader.Audio(g.audioCtx, "music/Towns/Bustling Streets.ogg", true)
+	if err != nil {
+		return fmt.Errorf("load background music player: %w", err)
+	}
+
+	g.backgroundMusic.SetVolume(0.5)
+	g.backgroundMusic.Play()
+
 	return nil
 }
 
@@ -173,18 +187,4 @@ func (g *Game) Layout(_, _ int) (screenWidth, screenHeight int) {
 func (g *Game) Shutdown() {
 	g.cancel()
 	g.wg.Wait()
-}
-
-func LoadImage(filePath string) (*ebiten.Image, error) {
-	imageFile, err := assets.FS.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("open %q: %w", filePath, err)
-	}
-
-	decodedImage, _, err := image.Decode(imageFile)
-	if err != nil {
-		return nil, fmt.Errorf("decode %q image: %w", filePath, err)
-	}
-
-	return ebiten.NewImageFromImage(decodedImage), nil
 }
