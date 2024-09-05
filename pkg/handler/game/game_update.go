@@ -23,6 +23,8 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	g.ticks++
+
 	if g.keybindings.IsActionJustPressed(ActionFullScreen) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
@@ -73,6 +75,8 @@ func (g *Game) Update() error {
 		g.player.Dir.X = 1
 		g.player.Dir.Y = 0
 	}
+
+	g.player.Moving = !move.IsZero()
 
 	coll := g.player.Collider
 	if g.collisions {

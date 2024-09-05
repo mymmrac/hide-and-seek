@@ -77,10 +77,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	drawCalls = append(drawCalls, g.player.Draw(g.worldImg, g.playerSpriteSheet))
+	drawCalls = append(drawCalls, g.player.Draw(g.worldImg, g.playerSpriteSheet, g.ticks))
 
 	g.players.ForEach(func(_ uint64, player *Player) bool {
-		drawCalls = append(drawCalls, player.Draw(g.worldImg, g.playerSpriteSheet))
+		drawCalls = append(drawCalls, player.Draw(g.worldImg, g.playerSpriteSheet, g.ticks))
 		return true
 	})
 

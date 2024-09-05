@@ -46,6 +46,7 @@ type Game struct {
 
 	camera   *camera.Camera
 	worldImg *ebiten.Image
+	ticks    int
 
 	defs  world.Defs
 	world world.World
@@ -84,6 +85,7 @@ func NewGame(
 			Zoom:     100,
 		},
 		worldImg:          ebiten.NewImage(2048, 2048),
+		ticks:             0,
 		defs:              world.Defs{},
 		world:             world.World{},
 		tilesets:          make(map[int]*ebiten.Image),

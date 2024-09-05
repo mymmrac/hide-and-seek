@@ -33,6 +33,10 @@ type Vec2F struct {
 	Y float64
 }
 
+func (v Vec2F) IsZero() bool {
+	return v.X == 0 && v.Y == 0
+}
+
 func (v Vec2F) Len2() float64 {
 	return v.X*v.X + v.Y*v.Y
 }
