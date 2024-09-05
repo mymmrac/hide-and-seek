@@ -77,23 +77,28 @@ func (g *Game) processMessage(msg *socket.Response) {
 		}
 
 		logger.FromContext(g.ctx).Infof("Player left: %+v", resp.PlayerLeave)
-	case *socket.Response_PlayerMove_:
-		player, ok := g.players.Get(resp.PlayerMove.PlayerId)
+	case *socket.Response_PlayerState_:
+		state := resp.PlayerState
+		player, ok := g.players.Get(state.PlayerId)
 		if !ok {
-			logger.FromContext(g.ctx).Errorf("Unknown player: %d", resp.PlayerMove.PlayerId)
+			logger.FromContext(g.ctx).Errorf("Unknown player: %d", state.PlayerId)
 			return
 		}
 
 		oldPos := player.Collider.Position()
 		newPos := space.Vec2F{
-			X: resp.PlayerMove.Pos.X,
-			Y: resp.PlayerMove.Pos.Y,
+			X: state.Pos.X,
+			Y: state.Pos.Y,
 		}
 
 		if newPos != oldPos {
 			player.Collider.SetPosition(newPos)
 			player.UpdatePosition()
 		}
+
+		player.Dir.X = int(state.Dir.X)
+		player.Dir.Y = int(state.Dir.Y)
+		player.Moving = state.Moving
 	default:
 		logger.FromContext(g.ctx).Errorf("Unknown response type: %T", resp)
 	}

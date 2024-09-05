@@ -10,8 +10,14 @@ message Request {
   oneof type {
     option  (validate.required) = true;
 
-    // Player moves
-    Pos player_move = 1 [(validate.rules).message.required = true];
+    // Player state
+    PlayerState player_state = 1 [(validate.rules).message.required = true];
+  }
+
+  message PlayerState {
+    Vec2F pos = 1 [(validate.rules).message.required = true];
+    Vec2I dir = 2 [(validate.rules).message.required = true];
+    bool moving = 3;
   }
 }
 
@@ -31,8 +37,8 @@ message Response {
     // Player leaves game
     uint64 player_leave = 11 [(validate.rules).uint64.gt = 0];
 
-    // Player moves
-    PlayerMove player_move = 20 [(validate.rules).message.required = true];
+    // Player state
+    PlayerState player_state = 20 [(validate.rules).message.required = true];
   }
 
   message Bulk {
@@ -63,13 +69,20 @@ message Response {
     string username = 2 [(validate.rules).string = {min_len: 1, max_len: 32}];
   }
 
-  message PlayerMove {
+  message PlayerState {
     uint64 player_id = 1 [(validate.rules).uint64.gt = 0];
-    Pos pos = 2 [(validate.rules).message.required = true];
+    Vec2F pos = 2 [(validate.rules).message.required = true];
+    Vec2I dir = 3 [(validate.rules).message.required = true];
+    bool moving = 4;
   }
 }
 
-message Pos {
+message Vec2F {
   double x = 1;
   double y = 2;
+}
+
+message Vec2I {
+  int32 x = 1;
+  int32 y = 2;
 }

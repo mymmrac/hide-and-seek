@@ -167,12 +167,14 @@ func (s *Server) handlerWS(conn *websocket.Conn) {
 
 func (s *Server) processRequest(client *Client, request *socket.Request) error {
 	switch req := request.Type.(type) {
-	case *socket.Request_PlayerMove:
+	case *socket.Request_PlayerState_:
 		msg := &socket.Response{
-			Type: &socket.Response_PlayerMove_{
-				PlayerMove: &socket.Response_PlayerMove{
+			Type: &socket.Response_PlayerState_{
+				PlayerState: &socket.Response_PlayerState{
 					PlayerId: client.PlayerID,
-					Pos:      req.PlayerMove,
+					Pos:      req.PlayerState.Pos,
+					Dir:      req.PlayerState.Dir,
+					Moving:   req.PlayerState.Moving,
 				},
 			},
 		}

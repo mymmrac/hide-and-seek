@@ -111,10 +111,17 @@ func (g *Game) Update() error {
 	if g.connected {
 		pos := coll.Position()
 		g.sendMessage(&socket.Request{
-			Type: &socket.Request_PlayerMove{
-				PlayerMove: &socket.Pos{
-					X: pos.X,
-					Y: pos.Y,
+			Type: &socket.Request_PlayerState_{
+				PlayerState: &socket.Request_PlayerState{
+					Pos: &socket.Vec2F{
+						X: pos.X,
+						Y: pos.Y,
+					},
+					Dir: &socket.Vec2I{
+						X: int32(g.player.Dir.X),
+						Y: int32(g.player.Dir.Y),
+					},
+					Moving: g.player.Moving,
 				},
 			},
 		})

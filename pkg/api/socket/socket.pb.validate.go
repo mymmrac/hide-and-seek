@@ -58,7 +58,7 @@ func (m *Request) validate(all bool) error {
 
 	oneofTypePresent := false
 	switch v := m.Type.(type) {
-	case *Request_PlayerMove:
+	case *Request_PlayerState_:
 		if v == nil {
 			err := RequestValidationError{
 				field:  "Type",
@@ -71,9 +71,9 @@ func (m *Request) validate(all bool) error {
 		}
 		oneofTypePresent = true
 
-		if m.GetPlayerMove() == nil {
+		if m.GetPlayerState() == nil {
 			err := RequestValidationError{
-				field:  "PlayerMove",
+				field:  "PlayerState",
 				reason: "value is required",
 			}
 			if !all {
@@ -83,11 +83,11 @@ func (m *Request) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetPlayerMove()).(type) {
+			switch v := interface{}(m.GetPlayerState()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, RequestValidationError{
-						field:  "PlayerMove",
+						field:  "PlayerState",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -95,16 +95,16 @@ func (m *Request) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, RequestValidationError{
-						field:  "PlayerMove",
+						field:  "PlayerState",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetPlayerMove()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetPlayerState()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return RequestValidationError{
-					field:  "PlayerMove",
+					field:  "PlayerState",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -462,7 +462,7 @@ func (m *Response) validate(all bool) error {
 			errors = append(errors, err)
 		}
 
-	case *Response_PlayerMove_:
+	case *Response_PlayerState_:
 		if v == nil {
 			err := ResponseValidationError{
 				field:  "Type",
@@ -475,9 +475,9 @@ func (m *Response) validate(all bool) error {
 		}
 		oneofTypePresent = true
 
-		if m.GetPlayerMove() == nil {
+		if m.GetPlayerState() == nil {
 			err := ResponseValidationError{
-				field:  "PlayerMove",
+				field:  "PlayerState",
 				reason: "value is required",
 			}
 			if !all {
@@ -487,11 +487,11 @@ func (m *Response) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetPlayerMove()).(type) {
+			switch v := interface{}(m.GetPlayerState()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, ResponseValidationError{
-						field:  "PlayerMove",
+						field:  "PlayerState",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -499,16 +499,16 @@ func (m *Response) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, ResponseValidationError{
-						field:  "PlayerMove",
+						field:  "PlayerState",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetPlayerMove()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetPlayerState()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return ResponseValidationError{
-					field:  "PlayerMove",
+					field:  "PlayerState",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -606,21 +606,21 @@ var _ interface {
 	ErrorName() string
 } = ResponseValidationError{}
 
-// Validate checks the field values on Pos with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *Pos) Validate() error {
+// Validate checks the field values on Vec2F with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Vec2F) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Pos with the rules defined in the
+// ValidateAll checks the field values on Vec2F with the rules defined in the
 // proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in PosMultiError, or nil if none found.
-func (m *Pos) ValidateAll() error {
+// a list of violation errors wrapped in Vec2FMultiError, or nil if none found.
+func (m *Vec2F) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Pos) validate(all bool) error {
+func (m *Vec2F) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -632,18 +632,18 @@ func (m *Pos) validate(all bool) error {
 	// no validation rules for Y
 
 	if len(errors) > 0 {
-		return PosMultiError(errors)
+		return Vec2FMultiError(errors)
 	}
 
 	return nil
 }
 
-// PosMultiError is an error wrapping multiple validation errors returned by
-// Pos.ValidateAll() if the designated constraints aren't met.
-type PosMultiError []error
+// Vec2FMultiError is an error wrapping multiple validation errors returned by
+// Vec2F.ValidateAll() if the designated constraints aren't met.
+type Vec2FMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m PosMultiError) Error() string {
+func (m Vec2FMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -652,11 +652,11 @@ func (m PosMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m PosMultiError) AllErrors() []error { return m }
+func (m Vec2FMultiError) AllErrors() []error { return m }
 
-// PosValidationError is the validation error returned by Pos.Validate if the
-// designated constraints aren't met.
-type PosValidationError struct {
+// Vec2FValidationError is the validation error returned by Vec2F.Validate if
+// the designated constraints aren't met.
+type Vec2FValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -664,22 +664,22 @@ type PosValidationError struct {
 }
 
 // Field function returns field value.
-func (e PosValidationError) Field() string { return e.field }
+func (e Vec2FValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e PosValidationError) Reason() string { return e.reason }
+func (e Vec2FValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e PosValidationError) Cause() error { return e.cause }
+func (e Vec2FValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e PosValidationError) Key() bool { return e.key }
+func (e Vec2FValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e PosValidationError) ErrorName() string { return "PosValidationError" }
+func (e Vec2FValidationError) ErrorName() string { return "Vec2FValidationError" }
 
 // Error satisfies the builtin error interface
-func (e PosValidationError) Error() string {
+func (e Vec2FValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -691,14 +691,14 @@ func (e PosValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sPos.%s: %s%s",
+		"invalid %sVec2F.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = PosValidationError{}
+var _ error = Vec2FValidationError{}
 
 var _ interface {
 	Field() string
@@ -706,7 +706,293 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = PosValidationError{}
+} = Vec2FValidationError{}
+
+// Validate checks the field values on Vec2I with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Vec2I) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Vec2I with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in Vec2IMultiError, or nil if none found.
+func (m *Vec2I) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Vec2I) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for X
+
+	// no validation rules for Y
+
+	if len(errors) > 0 {
+		return Vec2IMultiError(errors)
+	}
+
+	return nil
+}
+
+// Vec2IMultiError is an error wrapping multiple validation errors returned by
+// Vec2I.ValidateAll() if the designated constraints aren't met.
+type Vec2IMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Vec2IMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Vec2IMultiError) AllErrors() []error { return m }
+
+// Vec2IValidationError is the validation error returned by Vec2I.Validate if
+// the designated constraints aren't met.
+type Vec2IValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Vec2IValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Vec2IValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Vec2IValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Vec2IValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Vec2IValidationError) ErrorName() string { return "Vec2IValidationError" }
+
+// Error satisfies the builtin error interface
+func (e Vec2IValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sVec2I.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Vec2IValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Vec2IValidationError{}
+
+// Validate checks the field values on Request_PlayerState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Request_PlayerState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Request_PlayerState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// Request_PlayerStateMultiError, or nil if none found.
+func (m *Request_PlayerState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Request_PlayerState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetPos() == nil {
+		err := Request_PlayerStateValidationError{
+			field:  "Pos",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetPos()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Request_PlayerStateValidationError{
+					field:  "Pos",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Request_PlayerStateValidationError{
+					field:  "Pos",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPos()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Request_PlayerStateValidationError{
+				field:  "Pos",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetDir() == nil {
+		err := Request_PlayerStateValidationError{
+			field:  "Dir",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDir()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Request_PlayerStateValidationError{
+					field:  "Dir",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Request_PlayerStateValidationError{
+					field:  "Dir",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDir()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Request_PlayerStateValidationError{
+				field:  "Dir",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Moving
+
+	if len(errors) > 0 {
+		return Request_PlayerStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// Request_PlayerStateMultiError is an error wrapping multiple validation
+// errors returned by Request_PlayerState.ValidateAll() if the designated
+// constraints aren't met.
+type Request_PlayerStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Request_PlayerStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Request_PlayerStateMultiError) AllErrors() []error { return m }
+
+// Request_PlayerStateValidationError is the validation error returned by
+// Request_PlayerState.Validate if the designated constraints aren't met.
+type Request_PlayerStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Request_PlayerStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Request_PlayerStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Request_PlayerStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Request_PlayerStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Request_PlayerStateValidationError) ErrorName() string {
+	return "Request_PlayerStateValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Request_PlayerStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRequest_PlayerState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Request_PlayerStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Request_PlayerStateValidationError{}
 
 // Validate checks the field values on Response_Bulk with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
@@ -1266,22 +1552,22 @@ var _ interface {
 	ErrorName() string
 } = Response_PlayerJoinValidationError{}
 
-// Validate checks the field values on Response_PlayerMove with the rules
+// Validate checks the field values on Response_PlayerState with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Response_PlayerMove) Validate() error {
+func (m *Response_PlayerState) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Response_PlayerMove with the rules
+// ValidateAll checks the field values on Response_PlayerState with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Response_PlayerMoveMultiError, or nil if none found.
-func (m *Response_PlayerMove) ValidateAll() error {
+// Response_PlayerStateMultiError, or nil if none found.
+func (m *Response_PlayerState) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Response_PlayerMove) validate(all bool) error {
+func (m *Response_PlayerState) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1289,7 +1575,7 @@ func (m *Response_PlayerMove) validate(all bool) error {
 	var errors []error
 
 	if m.GetPlayerId() <= 0 {
-		err := Response_PlayerMoveValidationError{
+		err := Response_PlayerStateValidationError{
 			field:  "PlayerId",
 			reason: "value must be greater than 0",
 		}
@@ -1300,7 +1586,7 @@ func (m *Response_PlayerMove) validate(all bool) error {
 	}
 
 	if m.GetPos() == nil {
-		err := Response_PlayerMoveValidationError{
+		err := Response_PlayerStateValidationError{
 			field:  "Pos",
 			reason: "value is required",
 		}
@@ -1314,7 +1600,7 @@ func (m *Response_PlayerMove) validate(all bool) error {
 		switch v := interface{}(m.GetPos()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Response_PlayerMoveValidationError{
+				errors = append(errors, Response_PlayerStateValidationError{
 					field:  "Pos",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1322,7 +1608,7 @@ func (m *Response_PlayerMove) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Response_PlayerMoveValidationError{
+				errors = append(errors, Response_PlayerStateValidationError{
 					field:  "Pos",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1331,7 +1617,7 @@ func (m *Response_PlayerMove) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetPos()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Response_PlayerMoveValidationError{
+			return Response_PlayerStateValidationError{
 				field:  "Pos",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -1339,20 +1625,62 @@ func (m *Response_PlayerMove) validate(all bool) error {
 		}
 	}
 
+	if m.GetDir() == nil {
+		err := Response_PlayerStateValidationError{
+			field:  "Dir",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDir()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Response_PlayerStateValidationError{
+					field:  "Dir",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Response_PlayerStateValidationError{
+					field:  "Dir",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDir()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Response_PlayerStateValidationError{
+				field:  "Dir",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Moving
+
 	if len(errors) > 0 {
-		return Response_PlayerMoveMultiError(errors)
+		return Response_PlayerStateMultiError(errors)
 	}
 
 	return nil
 }
 
-// Response_PlayerMoveMultiError is an error wrapping multiple validation
-// errors returned by Response_PlayerMove.ValidateAll() if the designated
+// Response_PlayerStateMultiError is an error wrapping multiple validation
+// errors returned by Response_PlayerState.ValidateAll() if the designated
 // constraints aren't met.
-type Response_PlayerMoveMultiError []error
+type Response_PlayerStateMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Response_PlayerMoveMultiError) Error() string {
+func (m Response_PlayerStateMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1361,11 +1689,11 @@ func (m Response_PlayerMoveMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Response_PlayerMoveMultiError) AllErrors() []error { return m }
+func (m Response_PlayerStateMultiError) AllErrors() []error { return m }
 
-// Response_PlayerMoveValidationError is the validation error returned by
-// Response_PlayerMove.Validate if the designated constraints aren't met.
-type Response_PlayerMoveValidationError struct {
+// Response_PlayerStateValidationError is the validation error returned by
+// Response_PlayerState.Validate if the designated constraints aren't met.
+type Response_PlayerStateValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1373,24 +1701,24 @@ type Response_PlayerMoveValidationError struct {
 }
 
 // Field function returns field value.
-func (e Response_PlayerMoveValidationError) Field() string { return e.field }
+func (e Response_PlayerStateValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Response_PlayerMoveValidationError) Reason() string { return e.reason }
+func (e Response_PlayerStateValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Response_PlayerMoveValidationError) Cause() error { return e.cause }
+func (e Response_PlayerStateValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Response_PlayerMoveValidationError) Key() bool { return e.key }
+func (e Response_PlayerStateValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Response_PlayerMoveValidationError) ErrorName() string {
-	return "Response_PlayerMoveValidationError"
+func (e Response_PlayerStateValidationError) ErrorName() string {
+	return "Response_PlayerStateValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e Response_PlayerMoveValidationError) Error() string {
+func (e Response_PlayerStateValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1402,14 +1730,14 @@ func (e Response_PlayerMoveValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sResponse_PlayerMove.%s: %s%s",
+		"invalid %sResponse_PlayerState.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Response_PlayerMoveValidationError{}
+var _ error = Response_PlayerStateValidationError{}
 
 var _ interface {
 	Field() string
@@ -1417,4 +1745,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Response_PlayerMoveValidationError{}
+} = Response_PlayerStateValidationError{}
