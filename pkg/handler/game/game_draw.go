@@ -56,22 +56,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for _, lvl := range g.world.Levels {
 		for _, entity := range lvl.Entities {
-			def := g.defs.Entities[entity.EntityID]
-
-			tileset := g.defs.Tilesets[def.TilesetID]
-			tileDef := tileset.Tiles[def.TileID]
-			tileImage := g.tilesets[def.TilesetID].SubImage(image.Rect(
-				tileDef.Pos.X, tileDef.Pos.Y,
-				tileDef.Pos.X+tileDef.Size.X, tileDef.Pos.Y+tileDef.Size.Y,
-			))
-
 			op := &ebiten.DrawImageOptions{}
 			pos := entity.Pos.ToF()
 			op.GeoM.Translate(pos.X, pos.Y)
+			tileImage := g.entityImage(entity.EntityID)
 			drawCalls = append(drawCalls, DrawCall{
 				Y: pos.Y,
 				F: func() {
-					g.worldImg.DrawImage(tileImage.(*ebiten.Image), op)
+					g.worldImg.DrawImage(tileImage, op)
 				},
 			})
 		}
@@ -120,6 +112,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		"",
 		fmt.Sprintf("Connected: %t", g.connected),
 	)
+}
+
+func (g *Game) entityImage(entityID int) *ebiten.Image {
+	def := g.defs.Entities[entityID]
+
+	tileset := g.defs.Tilesets[def.TilesetID]
+	tileDef := tileset.Tiles[def.TileID]
+	tileImage := g.tilesets[def.TilesetID].SubImage(image.Rect(
+		tileDef.Pos.X, tileDef.Pos.Y,
+		tileDef.Pos.X+tileDef.Size.X, tileDef.Pos.Y+tileDef.Size.Y,
+	))
+
+	return tileImage.(*ebiten.Image)
 }
 
 func debugDraw(screen *ebiten.Image, lines ...string) {
