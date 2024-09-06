@@ -198,12 +198,12 @@ type EntityInstances struct {
 }
 
 type FieldInstance struct {
-	Identifier       string             `json:"__identifier"`
-	Type             string             `json:"__type"`
-	Value            FieldInstanceValue `json:"__value"`
-	Tile             any                `json:"__tile"`
-	DefUid           int                `json:"defUid"`
-	RealEditorValues []any              `json:"realEditorValues"`
+	Identifier       string               `json:"__identifier"`
+	Type             string               `json:"__type"`
+	Value            []FieldInstanceValue `json:"__value"`
+	Tile             any                  `json:"__tile"`
+	DefUid           int                  `json:"defUid"`
+	RealEditorValues []any                `json:"realEditorValues"`
 }
 
 type FieldInstanceValue struct {

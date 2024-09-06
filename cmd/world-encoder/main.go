@@ -80,23 +80,21 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 	}
 
 	for _, entity := range ldtk.Defs.Entities {
-		if entity.TilesetID == 0 {
-			continue
-		}
-
 		var tileID int
-		tileID, err = findOrAddTile(entity.TilesetID, world.TileDef{
-			Pos: space.Vec2I{
-				X: entity.TileRect.X,
-				Y: entity.TileRect.Y,
-			},
-			Size: space.Vec2I{
-				X: entity.TileRect.W,
-				Y: entity.TileRect.H,
-			},
-		})
-		if err != nil {
-			return fmt.Errorf("entity def: %w", err)
+		if entity.TilesetID != 0 {
+			tileID, err = findOrAddTile(entity.TilesetID, world.TileDef{
+				Pos: space.Vec2I{
+					X: entity.TileRect.X,
+					Y: entity.TileRect.Y,
+				},
+				Size: space.Vec2I{
+					X: entity.TileRect.W,
+					Y: entity.TileRect.H,
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("entity def: %w", err)
+			}
 		}
 
 		defs.Entities[entity.UID] = world.EntityDef{
@@ -106,7 +104,7 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 				X: entity.Width,
 				Y: entity.Height,
 			},
-			Collider: nil,
+			Colliders: nil,
 		}
 	}
 
@@ -131,27 +129,31 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 
 			for _, entity := range furnitureLayer.EntityInstances {
 				i = slices.IndexFunc(entity.FieldInstances, func(field FieldInstance) bool {
-					return field.Identifier == "collider"
+					return field.Identifier == "colliders"
 				})
-				colliderRef := entity.FieldInstances[i]
-
-				i = slices.IndexFunc(collidersLayer.EntityInstances, func(instances EntityInstances) bool {
-					return instances.Iid == colliderRef.Value.EntityIid
-				})
-				collider := collidersLayer.EntityInstances[i]
+				fieldInstance := entity.FieldInstances[i]
+				colliderRefs := fieldInstance.Value
 
 				entityDef := defs.Entities[entity.DefUID]
-				entityDef.Collider = &world.Collider{
-					Tags: []string{"solid"},
-					Pos: space.Vec2I{
-						X: collider.WorldX - entity.WorldX,
-						Y: collider.WorldY - entity.WorldY,
-					},
-					Size: space.Vec2I{
-						X: collider.Width,
-						Y: collider.Height,
-					},
+				for _, colliderRef := range colliderRefs {
+					i = slices.IndexFunc(collidersLayer.EntityInstances, func(instances EntityInstances) bool {
+						return instances.Iid == colliderRef.EntityIid
+					})
+					collider := collidersLayer.EntityInstances[i]
+
+					entityDef.Colliders = append(entityDef.Colliders, world.Collider{
+						Tags: []string{"solid"},
+						Pos: space.Vec2I{
+							X: collider.WorldX - entity.WorldX,
+							Y: collider.WorldY - entity.WorldY,
+						},
+						Size: space.Vec2I{
+							X: collider.Width,
+							Y: collider.Height,
+						},
+					})
 				}
+
 				defs.Entities[entity.DefUID] = entityDef
 			}
 		default:
@@ -267,7 +269,8 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 					}
 				case "colliders":
 					for _, entity := range layer.EntityInstances {
-						if entity.Identifier == "solid" {
+						switch entity.Identifier {
+						case "solid":
 							lv.Colliders = append(lv.Colliders, world.Collider{
 								Tags: []string{"solid"},
 								Pos: space.Vec2I{
@@ -279,15 +282,32 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 									Y: entity.Height,
 								},
 							})
+						case "corner_l", "corner_r":
+							entityDef := defs.Entities[entity.DefUID]
+							for _, collider := range entityDef.Colliders {
+								lv.Colliders = append(lv.Colliders, world.Collider{
+									Tags: collider.Tags,
+									Pos: space.Vec2I{
+										X: entity.WorldX + collider.Pos.X,
+										Y: entity.WorldY + collider.Pos.Y,
+									},
+									Size: collider.Size,
+								})
+							}
+						default:
+							return fmt.Errorf("unknown collider: %q", entity.Identifier)
 						}
 					}
 				case "entities":
 					for _, entity := range layer.EntityInstances {
-						if entity.Identifier == "spawn" {
+						switch entity.Identifier {
+						case "spawn":
 							wd.Spawn = space.Vec2I{
 								X: entity.WorldX,
 								Y: entity.WorldY,
 							}
+						default:
+							return fmt.Errorf("unknown entity: %q", entity.Identifier)
 						}
 					}
 				default:

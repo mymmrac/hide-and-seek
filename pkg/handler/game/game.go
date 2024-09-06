@@ -170,15 +170,13 @@ func (g *Game) Init() error {
 
 		for _, entity := range level.Entities {
 			entityDef := g.defs.Entities[entity.EntityID]
-			if entityDef.Collider == nil {
-				continue
+			for _, coll := range entityDef.Colliders {
+				g.cw.NewObject(
+					entity.Pos.ToF().Add(coll.Pos.ToF()),
+					coll.Size.ToF(),
+					coll.Tags...,
+				)
 			}
-
-			g.cw.NewObject(
-				entity.Pos.ToF().Add(entityDef.Collider.Pos.ToF()),
-				entityDef.Collider.Size.ToF(),
-				entityDef.Collider.Tags...,
-			)
 		}
 	}
 
