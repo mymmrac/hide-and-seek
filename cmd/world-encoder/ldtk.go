@@ -181,20 +181,36 @@ type Tile struct {
 }
 
 type EntityInstances struct {
-	Identifier     string `json:"__identifier"`
-	Grid           []int  `json:"__grid"`
-	Pivot          []int  `json:"__pivot"`
-	Tags           []any  `json:"__tags"`
-	Tile           Tile   `json:"__tile"`
-	SmartColor     string `json:"__smartColor"`
-	Iid            string `json:"iid"`
-	Width          int    `json:"width"`
-	Height         int    `json:"height"`
-	DefUID         int    `json:"defUid"`
-	Px             []int  `json:"px"`
-	FieldInstances []any  `json:"fieldInstances"`
-	WorldX         int    `json:"__worldX"`
-	WorldY         int    `json:"__worldY"`
+	Identifier     string          `json:"__identifier"`
+	Grid           []int           `json:"__grid"`
+	Pivot          []int           `json:"__pivot"`
+	Tags           []any           `json:"__tags"`
+	Tile           Tile            `json:"__tile"`
+	SmartColor     string          `json:"__smartColor"`
+	Iid            string          `json:"iid"`
+	Width          int             `json:"width"`
+	Height         int             `json:"height"`
+	DefUID         int             `json:"defUid"`
+	Px             []int           `json:"px"`
+	FieldInstances []FieldInstance `json:"fieldInstances"`
+	WorldX         int             `json:"__worldX"`
+	WorldY         int             `json:"__worldY"`
+}
+
+type FieldInstance struct {
+	Identifier       string             `json:"__identifier"`
+	Type             string             `json:"__type"`
+	Value            FieldInstanceValue `json:"__value"`
+	Tile             any                `json:"__tile"`
+	DefUid           int                `json:"defUid"`
+	RealEditorValues []any              `json:"realEditorValues"`
+}
+
+type FieldInstanceValue struct {
+	EntityIid string `json:"entityIid"`
+	LayerIid  string `json:"layerIid"`
+	LevelIid  string `json:"levelIid"`
+	WorldIid  string `json:"worldIid"`
 }
 
 type LayerInstances struct {

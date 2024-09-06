@@ -21,6 +21,7 @@ type EntityDef struct {
 	TilesetID int
 	TileID    int
 	Size      space.Vec2I
+	Collider  *Collider
 }
 
 type World struct {

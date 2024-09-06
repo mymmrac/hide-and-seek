@@ -167,6 +167,19 @@ func (g *Game) Init() error {
 		for _, coll := range level.Colliders {
 			g.cw.NewObject(coll.Pos.ToF(), coll.Size.ToF(), coll.Tags...)
 		}
+
+		for _, entity := range level.Entities {
+			entityDef := g.defs.Entities[entity.EntityID]
+			if entityDef.Collider == nil {
+				continue
+			}
+
+			g.cw.NewObject(
+				entity.Pos.ToF().Add(entityDef.Collider.Pos.ToF()),
+				entityDef.Collider.Size.ToF(),
+				entityDef.Collider.Tags...,
+			)
+		}
 	}
 
 	g.backgroundMusic, err = loader.Audio(g.audioCtx, "music/Towns/Bustling Streets.ogg", true)

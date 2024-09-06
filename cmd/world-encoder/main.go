@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/mymmrac/hide-and-seek/pkg/module/logger"
 	"github.com/mymmrac/hide-and-seek/pkg/module/space"
@@ -105,10 +106,64 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 				X: entity.Width,
 				Y: entity.Height,
 			},
+			Collider: nil,
 		}
 	}
 
 	for _, w := range ldtk.Worlds {
+		if !strings.HasPrefix(w.Identifier, "sys_") {
+			continue
+		}
+
+		switch w.Identifier {
+		case "sys_furniture_colliders":
+			lvl := w.Levels[0]
+
+			i := slices.IndexFunc(lvl.LayerInstances, func(instances LayerInstances) bool {
+				return instances.Identifier == "furniture_entities"
+			})
+			furnitureLayer := lvl.LayerInstances[i]
+
+			i = slices.IndexFunc(lvl.LayerInstances, func(instances LayerInstances) bool {
+				return instances.Identifier == "colliders"
+			})
+			collidersLayer := lvl.LayerInstances[i]
+
+			for _, entity := range furnitureLayer.EntityInstances {
+				i = slices.IndexFunc(entity.FieldInstances, func(field FieldInstance) bool {
+					return field.Identifier == "collider"
+				})
+				colliderRef := entity.FieldInstances[i]
+
+				i = slices.IndexFunc(collidersLayer.EntityInstances, func(instances EntityInstances) bool {
+					return instances.Iid == colliderRef.Value.EntityIid
+				})
+				collider := collidersLayer.EntityInstances[i]
+
+				entityDef := defs.Entities[entity.DefUID]
+				entityDef.Collider = &world.Collider{
+					Tags: []string{"solid"},
+					Pos: space.Vec2I{
+						X: collider.WorldX - entity.WorldX,
+						Y: collider.WorldY - entity.WorldY,
+					},
+					Size: space.Vec2I{
+						X: collider.Width,
+						Y: collider.Height,
+					},
+				}
+				defs.Entities[entity.DefUID] = entityDef
+			}
+		default:
+			return fmt.Errorf("unknown system world: %q", w.Identifier)
+		}
+	}
+
+	for _, w := range ldtk.Worlds {
+		if strings.HasPrefix(w.Identifier, "sys_") {
+			continue
+		}
+
 		wd := world.World{
 			Levels: make([]world.Level, len(w.Levels)),
 			Spawn:  space.Vec2I{},
