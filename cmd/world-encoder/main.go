@@ -329,13 +329,13 @@ func encodeWorlds(log *logger.Logger, ldtkFilePath, outputDirPath string) error 
 			wd.Levels[i] = lv
 		}
 
-		if err = encode(defs, filepath.Join(outputDirPath, "defs.bin")); err != nil {
-			return fmt.Errorf("defs: %w", err)
-		}
-
 		if err = encode(wd, filepath.Join(outputDirPath, fmt.Sprintf("world_%s.bin", w.Identifier))); err != nil {
 			return fmt.Errorf("world: %w", err)
 		}
+	}
+
+	if err = encode(defs, filepath.Join(outputDirPath, "defs.bin")); err != nil {
+		return fmt.Errorf("defs: %w", err)
 	}
 
 	return nil
